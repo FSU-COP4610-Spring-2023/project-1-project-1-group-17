@@ -4,14 +4,14 @@
 # Project: 1
 # Description: This is the Project 1 makefile (parser demo).
 
-BINS = parser
+BINS = main
 C = gcc
 CFLAGS = -std=gnu99 -Wall -pedantic -g
 
 all: $(BINS)
 
-parser: parser.c
-	$(C) $(CFLAGS) -o parser parser.c
+main: main.c
+	$(C) $(CFLAGS) -o main main.c
 
 clean:
 	rm $(BINS)

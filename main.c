@@ -119,7 +119,29 @@ void forker(){
     
 }
 //__________________________________________________________________________________
+//                                     Tilde Expansion
 
+void tildeExpansion(tokenlist *tokens)
+{
+    for(int i = 0; i < tokens->size; i++)
+    {
+        char * copy;
+        strcpy(tokens[i], copy);
+        int d = 0;
+        while(copy[d] != '\0')
+        {
+            if(copy[d] == '~')
+            {
+                char * home = getenv("HOME");
+                strcat(home, copy);
+                
+            }
+            d++;
+        }
+        //might cause memory leak
+        
+    }
+}
 
 
 int main()
@@ -151,7 +173,15 @@ int main()
         if(compare == 0){
             forker();
         }
-        
+
+        //Tilde Expansion
+        for (int i = 0; i < tokens->size; i++)
+        {
+            if(strchr(tokens->items[i], '~') != NULL)
+            {
+                tildeExpansion(tokens);
+            }
+        }
 
         free(input);
         free_tokens(tokens);
