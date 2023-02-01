@@ -125,21 +125,20 @@ void tildeExpansion(tokenlist *tokens)
 {
     for(int i = 0; i < tokens->size; i++)
     {
-        char * copy;
-        strcpy(tokens[i], copy);
-        int d = 0;
-        while(copy[d] != '\0')
+        if(strchr(tokens->items[i], '~') != NULL)
         {
-            if(copy[d] == '~')
-            {
-                char * home = getenv("HOME");
-                strcat(home, copy);
-                
-            }
-            d++;
+            char * copy = strchr(tokens->items[i], '/');
+            char copyTwo[strlen(copy)];
+            strcpy(copyTwo, copy);
+            
+            printf(copyTwo);
+
+            unsigned int length = strlen(copy) + strlen(getenv("HOME"));
+
+            tokens->items[i] = (char*) realloc(tokens->items[i], length * sizeof(char));
+            strcpy(tokens->items[i], getenv("HOME"));
+            strcat(tokens->items[i], copyTwo);
         }
-        //might cause memory leak
-        
     }
 }
 
@@ -164,15 +163,6 @@ int main()
         printf("whole input: %s\n", input);
 
         tokenlist *tokens = get_tokens(input);
-        for (int i = 0; i < tokens->size; i++) {
-            printf("token %d: (%s)\n", i, tokens->items[i]);
-        }
-        
-        //dealing with an ls
-        int compare =strcmp (input, "ls");
-        if(compare == 0){
-            forker();
-        }
 
         //Tilde Expansion
         for (int i = 0; i < tokens->size; i++)
@@ -181,6 +171,16 @@ int main()
             {
                 tildeExpansion(tokens);
             }
+        }
+
+        for (int i = 0; i < tokens->size; i++) {
+            printf("token %d: (%s)\n", i, tokens->items[i]);
+        }
+        
+        //dealing with an ls
+        int compare =strcmp (input, "ls");
+        if(compare == 0){
+            forker();
         }
 
         free(input);
