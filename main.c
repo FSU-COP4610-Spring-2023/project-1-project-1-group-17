@@ -20,7 +20,8 @@ tokenlist *new_tokenlist(void);
 void add_token(tokenlist *tokens, char *item);
 void free_tokens(tokenlist *tokens);
 
-
+int EnvironmentVars();
+void prompt();
 
 tokenlist *new_tokenlist(void)
 {
@@ -159,7 +160,7 @@ int main()
     
     
     while (1) {
-        printf("> ");
+        prompt();
 
         /* input contains the whole command
          * tokens contains substrings from input split by spaces
@@ -206,6 +207,63 @@ return 0;
 
 
 
+//use this for environment variables: it identifies individual environment variables
+//but need to get first occurence of $ then print the correct value
+int EnvironmentVars(char * input){
+
+
+    char * getenv(const char *name);
+    char * user = getenv(input);
+    char * machine = getenv(input);
+    char * pwd = getenv(input);
+
+
+    //first case = USER (Ex: abbinant)
+    if (user != NULL){
+        printf("USER: %s\n", user);
+        return 0;
+    }
+    else if (user == NULL){ // error testing
+        printf("ERROR: This cannot be found..");
+        return 1;
+    }
+    //second case = MACHINE (Ex" linprog2.cs.fsu.edu)
+    else if (machine != NULL){
+        printf("MACHINE: %s\n", machine);
+        return 0;
+    }
+    else if (machine == NULL){ // error testing
+        printf("ERROR: This cannot be found...");
+        return 1;
+    }
+    //third case: PWD (Ex: /home/grads/abbinant >
+    else if (pwd != NULL){
+        printf("PWD: %s\n", pwd);
+        return 0;
+    }
+    else if (pwd == NULL){ // error testing
+        printf("ERROR: This cannot be found...");
+        return 1;
+    }
+    else if (input == "USER MACHINE PWD"){
+        printf(user, "@", machine, " : ", pwd);
+    }
+
+
+}
+
+
+//FINISHED------------------------
+void prompt(){
+    char * getenv(const char *name);
+    char * user = getenv("USER");
+    char * machine = getenv("MACHINE");
+    char * pwd = getenv("PWD");
+
+    printf("%s""%c""%s"" ""%c"" ""%s"">", user, 64, machine, 58, pwd);
+
+
+}
 
 
 
