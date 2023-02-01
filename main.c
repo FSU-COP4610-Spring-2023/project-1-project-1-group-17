@@ -1,5 +1,3 @@
-// Project 1: Emma Baudo, Daniel Pijeira, Thomas Vogt
-
 #include <stdio.h>
 #include<string.h>
 #include<stdlib.h>
@@ -8,13 +6,6 @@
 #include <fcntl.h>
 
 
-/*Parser: software component that reads lines like "ls -al"
-then puts it into Command Table and will store the commands that are executed
-
- Objective: Shell must parse the command string into meaningful tokens.
- String can include command name, arguments, I/O redirection, piping, & background execution tokens
- User enters: commands where token is separated by 1 space
- */
 
 //____________________________________TOKENS______________________________________________
 typedef struct {
@@ -29,35 +20,6 @@ tokenlist *new_tokenlist(void);
 void add_token(tokenlist *tokens, char *item);
 void free_tokens(tokenlist *tokens);
 
-int EnvironmentVars();
-void prompt();
-
-//---------------------------------Main-------------------------------------
-
-int main()
-{
-    //Prompt();
-
-    while (1) {
-        prompt();
-
-/* input contains the whole command
- * tokens contains substrings from input split by spaces
- */
-        char *input = get_input();
-        printf("whole input: %s\n", input);
-        tokenlist *tokens = get_tokens(input);
-
-        for (int i = 0; i < tokens->size; i++) {
-            printf("token %d: (%s)\n", i, tokens->items[i]);
-        }
-
-
-        free(input);
-        free_tokens(tokens);
-    }
-    return 0;
-}
 
 
 tokenlist *new_tokenlist(void)
@@ -153,70 +115,177 @@ void forker(){
         printf("I am the parent process\n");
         waitpid(pid,NULL,0);
     }
-
-
+    
+    
 }
 //__________________________________________________________________________________
-//Piping: parent process should do all the piping and redirection b/w forking the processes
-//So, children will inherit the redirection
-// I/O redirection: parent needs to save I/O and restore it at the end
+//                                     Tilde Expansion
 
-//-----------------------------------------------------------------------------------
+void tildeExpansion(tokenlist *tokens)
+{
+    for(int i = 0; i < tokens->size; i++)
+    {
+        if(strchr(tokens->items[i], '~') != NULL)
+        {
+            char * copy = strchr(tokens->items[i], '/');
+            char copyTwo[strlen(copy)];
+            strcpy(copyTwo, copy);
+            
+            printf(copyTwo);
 
-//use this for environment variables: it identifies individual environment variables
-//but need to get first occurence of $ then print the correct value
-int EnvironmentVars(char * input){
+            unsigned int length = strlen(copy) + strlen(getenv("HOME"));
 
-
-    char * getenv(const char *name);
-    char * user = getenv(input);
-    char * machine = getenv(input);
-    char * pwd = getenv(input);
-
-
-    //first case = USER (Ex: abbinant)
-    if (user != NULL){
-        printf("USER: %s\n", user);
-        return 0;
+            tokens->items[i] = (char*) realloc(tokens->items[i], length * sizeof(char));
+            strcpy(tokens->items[i], getenv("HOME"));
+            strcat(tokens->items[i], copyTwo);
+        }
     }
-    else if (user == NULL){ // error testing
-        printf("ERROR: This cannot be found..");
-        return 1;
-    }
-    //second case = MACHINE (Ex" linprog2.cs.fsu.edu)
-    else if (machine != NULL){
-        printf("MACHINE: %s\n", machine);
-        return 0;
-    }
-    else if (machine == NULL){ // error testing
-        printf("ERROR: This cannot be found...");
-        return 1;
-    }
-    //third case: PWD (Ex: /home/grads/abbinant >
-    else if (pwd != NULL){
-        printf("PWD: %s\n", pwd);
-        return 0;
-    }
-    else if (pwd == NULL){ // error testing
-        printf("ERROR: This cannot be found...");
-        return 1;
-    }
-    else if (input == "USER MACHINE PWD"){
-        printf(user, "@", machine, " : ", pwd);
-    }
-
-
 }
 
 
-//FINISHED------------------------
-void prompt(){
-    char * getenv(const char *name);
-    char * user = getenv("USER");
-    char * machine = getenv("MACHINE");
-    char * pwd = getenv("PWD");
+int main()
+{
 
-    printf("%s""%c""%s"" ""%c"" ""%s"">", user, 64, machine, 58, pwd);
+    char *hello = malloc(strlen("Welcome to our shell!\n") + 1);
+    strcpy(hello, "Welcome to our shell!\n");
+    printf("%s", hello);
+    free(hello);
+    
+    
+    while (1) {
+        printf("> ");
 
+        /* input contains the whole command
+         * tokens contains substrings from input split by spaces
+         */
 
+        char *input = get_input();
+        printf("whole input: %s\n", input);
+
+        tokenlist *tokens = get_tokens(input);
+
+        //Tilde Expansion
+        for (int i = 0; i < tokens->size; i++)
+        {
+            if(strchr(tokens->items[i], '~') != NULL)
+            {
+                tildeExpansion(tokens);
+            }
+        }
+
+        for (int i = 0; i < tokens->size; i++) {
+            printf("token %d: (%s)\n", i, tokens->items[i]);
+        }
+        
+        //dealing with an ls
+        int compare =strcmp (input, "ls");
+        if(compare == 0){
+            forker();
+        }
+
+        free(input);
+        free_tokens(tokens);
+        
+        
+       
+    }
+    
+    return(0);
+
+return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
