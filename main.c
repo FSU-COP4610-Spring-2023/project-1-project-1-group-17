@@ -119,7 +119,28 @@ void forker(){
     
 }
 //__________________________________________________________________________________
+//                                     Tilde Expansion
 
+void tildeExpansion(tokenlist *tokens)
+{
+    for(int i = 0; i < tokens->size; i++)
+    {
+        if(strchr(tokens->items[i], '~') != NULL)
+        {
+            char * copy = strchr(tokens->items[i], '/');
+            char copyTwo[strlen(copy)];
+            strcpy(copyTwo, copy);
+            
+            printf(copyTwo);
+
+            unsigned int length = strlen(copy) + strlen(getenv("HOME"));
+
+            tokens->items[i] = (char*) realloc(tokens->items[i], length * sizeof(char));
+            strcpy(tokens->items[i], getenv("HOME"));
+            strcat(tokens->items[i], copyTwo);
+        }
+    }
+}
 
 
 int main()
@@ -142,6 +163,16 @@ int main()
         printf("whole input: %s\n", input);
 
         tokenlist *tokens = get_tokens(input);
+
+        //Tilde Expansion
+        for (int i = 0; i < tokens->size; i++)
+        {
+            if(strchr(tokens->items[i], '~') != NULL)
+            {
+                tildeExpansion(tokens);
+            }
+        }
+
         for (int i = 0; i < tokens->size; i++) {
             printf("token %d: (%s)\n", i, tokens->items[i]);
         }
@@ -151,7 +182,6 @@ int main()
         if(compare == 0){
             forker();
         }
-        
 
         free(input);
         free_tokens(tokens);
