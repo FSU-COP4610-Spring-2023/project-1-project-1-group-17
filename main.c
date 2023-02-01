@@ -121,6 +121,11 @@ void forker(){
 //__________________________________________________________________________________
 //                                     Tilde Expansion
 
+/*
+This function takes in the tokenlist and checks if a tilde is present.
+Then it finds the specific token where the tilde is located and replaces it
+with $HOME and concatenates the rest of the directory on to $HOME
+*/
 void tildeExpansion(tokenlist *tokens)
 {
     for(int i = 0; i < tokens->size; i++)
@@ -142,6 +147,7 @@ void tildeExpansion(tokenlist *tokens)
     }
 }
 
+/---
 
 int main()
 {
@@ -172,6 +178,9 @@ int main()
                 tildeExpansion(tokens);
             }
         }
+
+        //$PATH search
+
 
         for (int i = 0; i < tokens->size; i++) {
             printf("token %d: (%s)\n", i, tokens->items[i]);
