@@ -192,7 +192,8 @@ int main()
         if(compare == 0){
             forker();
         }
-
+        
+        EnvironmentVars(tokens);
         free(input);
         free_tokens(tokens);
         
@@ -207,48 +208,20 @@ return 0;
 
 
 
-//use this for environment variables: it identifies individual environment variables
-//but need to get first occurence of $ then print the correct value
-int EnvironmentVars(char * input){
+//FINISHED------------------------
+int EnvironmentVars(tokenlist *tokens){
 
+    for (int i = 0; i < tokens->size; i++){
 
-    char * getenv(const char *name);
-    char * user = getenv(input);
-    char * machine = getenv(input);
-    char * pwd = getenv(input);
+        char dollar = tokens->items[i][0];
 
+        if(dollar == '$'){
 
-    //first case = USER (Ex: abbinant)
-    if (user != NULL){
-        printf("USER: %s\n", user);
-        return 0;
+            char * doCommand = getenv(tokens->items[i] + 1);
+            printf("%s", doCommand, "\n");
+            printf("\n");
+        }
     }
-    else if (user == NULL){ // error testing
-        printf("ERROR: This cannot be found..");
-        return 1;
-    }
-    //second case = MACHINE (Ex" linprog2.cs.fsu.edu)
-    else if (machine != NULL){
-        printf("MACHINE: %s\n", machine);
-        return 0;
-    }
-    else if (machine == NULL){ // error testing
-        printf("ERROR: This cannot be found...");
-        return 1;
-    }
-    //third case: PWD (Ex: /home/grads/abbinant >
-    else if (pwd != NULL){
-        printf("PWD: %s\n", pwd);
-        return 0;
-    }
-    else if (pwd == NULL){ // error testing
-        printf("ERROR: This cannot be found...");
-        return 1;
-    }
-    else if (input == "USER MACHINE PWD"){
-        printf(user, "@", machine, " : ", pwd);
-    }
-
 
 }
 
