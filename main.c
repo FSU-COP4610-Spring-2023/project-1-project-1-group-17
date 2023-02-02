@@ -236,7 +236,39 @@ void prompt(){
 
 }
 
+void pathSearch(tokenlist * tokens){
+    
+    char * argv[tokens->size];
+    for(int i = 0; i < tokens->size; i++){
+        argv[i] = tokens->items[i];
+    }
+    
+ 
+    char * temp_Path= getenv("PATH");
+    char * colon = strtok(temp_Path, ":");
 
+    while(colon != NULL){
+    
+        unsigned int length = strlen(colon) + strlen(argv[0]) + 2;
+        char buffer[length];
+        strcpy(buffer, colon);
+        
+        strcat(buffer, "/");
+        strcat(buffer, argv[0]);
+        
+        //printf("%s\n", buffer); //printing to confirm it works, it does
+        
+        
+        //do access check
+        if (access(buffer, F_OK))
+        {
+            execv(buffer, argv);
+        }
+        
+        colon = strtok(NULL, ":");
+    }//end while loop
+   
+}
 
 
 
