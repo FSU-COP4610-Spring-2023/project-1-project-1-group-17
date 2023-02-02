@@ -180,8 +180,6 @@ int main()
             }
         }
 
-        //$PATH search
-        void pathSearch(tokens->items);
 
         for (int i = 0; i < tokens->size; i++) {
             printf("token %d: (%s)\n", i, tokens->items[i]);
