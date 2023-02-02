@@ -20,6 +20,7 @@ tokenlist *new_tokenlist(void);
 void add_token(tokenlist *tokens, char *item);
 void free_tokens(tokenlist *tokens);
 
+void tildeExpansion(tokenlist *tokens);
 int EnvironmentVars();
 void prompt();
 
@@ -137,7 +138,7 @@ void tildeExpansion(tokenlist *tokens)
             char copyTwo[strlen(copy)];
             strcpy(copyTwo, copy);
             
-            printf(copyTwo);
+            //printf(copyTwo);
 
             unsigned int length = strlen(copy) + strlen(getenv("HOME"));
 
@@ -148,7 +149,6 @@ void tildeExpansion(tokenlist *tokens)
     }
 }
 
-/---
 
 int main()
 {
@@ -181,7 +181,7 @@ int main()
         }
 
         //$PATH search
-
+        void pathSearch(tokens->items);
 
         for (int i = 0; i < tokens->size; i++) {
             printf("token %d: (%s)\n", i, tokens->items[i]);
