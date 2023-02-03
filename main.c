@@ -25,6 +25,7 @@ void free_tokens(tokenlist *tokens);
 void tildeExpansion(tokenlist *tokens);
 int EnvironmentVars();
 void prompt();
+void pipeHandler();
 
 tokenlist *new_tokenlist(void)
 {
@@ -158,6 +159,15 @@ int main()
             if(strchr(tokens->items[i], '~') != NULL)
             {
                 tildeExpansion(tokens);
+            }
+        }
+        
+        //PIPING
+        for (int i = 0; i < tokens->size; i++)
+        {
+            if (strchr(tokens->items[i], '|') != NULL)
+            {
+                pipeHandler();
             }
         }
 
