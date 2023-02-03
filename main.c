@@ -336,6 +336,62 @@ void background_processing(tokenlist * tokens){
     
 }
 
+//__________________________________________________________________________________
+//                                      I/O REDIRECTION
+
+/* I/O redirection from/to a file. Shell receives input from keyboard and writes output to
+ * screen. Input redirection (<) will replace keyboard, Output (>) will replace
+ * screen with specified file
+ */
+
+/*  fd  file
+ *  0   keyboard (input)
+ *  1   file (after dup)
+ *  2   screen (output)
+ *  3   file (then this will be closed, so only have 0,1,2)
+ */
+
+//it is creating the file, opening and closing
+int InputOutputRedirection(int argc, char * argv[], tokenlist * tokens) {
+
+    char * filename;
+    pid_t pid = fork();
+    int fd = open(filename, O_WRONLY | O_CREAT); //output
+    int status;
+
+    //------------------------------------------------------STORES & PRINTS FILENAME
+    for (int i = 0; i < tokens->size; i++){
+        if(strcmp(tokens->items[i], ">") == 0){
+            filename = tokens->items[i+1];
+        }
+    }
+
+    //------------------------------------------------------
+
+    char * path = getenv("PATH");
+
+    //child process
+    if (pid == 0){
+        //this will write only to file, and create file if it exists
+        //if file does exist, O_CREAT will not be executed
+        int fd = open(filename, O_WRONLY | O_CREAT); //output
+        close(stdout);
+        dup(fd);
+        close(fd);
+        execv(path, filename);
+
+    }
+
+    else {
+        close(fd); //closing
+        waitpid(pid, status, 0); //waiting for pid (parent process)
+
+    }
+
+    printf("\nFILENAME: %s\n", filename);
+
+}
+
 
 
 
