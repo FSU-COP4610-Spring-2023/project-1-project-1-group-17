@@ -180,6 +180,8 @@ int main()
             }
         }
 
+        pathSearch(tokens);
+
 
         for (int i = 0; i < tokens->size; i++) {
             printf("token %d: (%s)\n", i, tokens->items[i]);
@@ -236,7 +238,7 @@ void prompt(){
 
 }
 
-void pathSearch(tokenlist * tokens){
+/*void pathSearch(tokenlist * tokens){
     
     char * argv[tokens->size];
     for(int i = 0; i < tokens->size; i++){
@@ -268,7 +270,7 @@ void pathSearch(tokenlist * tokens){
         colon = strtok(NULL, ":");
     }//end while loop
    
-}
+}*/
 
 //new path search() feb 3. 11:09
 
@@ -277,11 +279,11 @@ void pathSearch(tokenlist * tokens){
     char * argv[tokens->size];
     //michael said to make sure argv is null terminated at the end... think this was the fix i needed
     argv[tokens->size + 1] = NULL;
-
     
     for(int i = 0; i < tokens->size; i++){
         argv[i] = tokens->items[i];
     }
+    //int checker = 0;
     
  
     char * temp_Path= getenv("PATH");
@@ -296,8 +298,7 @@ void pathSearch(tokenlist * tokens){
         strcat(buffer, "/");
         strcat(buffer, argv[0]);
         
-       
-       // printf("%s\n", buffer); //printing to confirm it works, it does
+
         printf("\nBUFFER: \n");
         printf("%s\n", buffer); //printing to confirm it works, it does
         
@@ -305,10 +306,24 @@ void pathSearch(tokenlist * tokens){
     
         if (access(buffer, F_OK) == 0)
         {
-            printf("FOUND IT!\n");
+            //printf("FOUND IT!\n");
+            /*if(checker == 1)
+            {
+                return(0);
+            }*/
+            //checker ++;
             if(access(buffer, X_OK) == 0){
                 printf("IT IS GOOD TO EXECUTE\n\n");
-                execv(buffer, argv);
+                int pid = fork();
+                if (pid == 0)
+                {
+                    execv(buffer, argv);
+                }
+                else
+                {
+                    waitpid(pid, NULL, 0);
+                }
+                return 0;
             }
             else{
                 printf("that isn't executable\n");
