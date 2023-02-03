@@ -15,6 +15,7 @@ typedef struct {
     char **items;
 } tokenlist;
 
+//________________________________DECLARATIONS______________________________
 char *get_input(void);
 tokenlist *get_tokens(char *input);
 
@@ -25,7 +26,9 @@ void free_tokens(tokenlist *tokens);
 void tildeExpansion(tokenlist *tokens);
 int EnvironmentVars();
 void prompt();
-void pipeHandler();
+
+//__________________________________________________________
+
 
 tokenlist *new_tokenlist(void)
 {
@@ -132,6 +135,8 @@ void tildeExpansion(tokenlist *tokens)
 }
 
 
+//__________________________________________________________________________________
+//
 int main()
 {
 
@@ -140,6 +145,7 @@ int main()
     printf("%s", hello);
     free(hello);
     
+    //if arrow call function, then pass in token list
     
     while (1) {
         prompt();
@@ -178,6 +184,7 @@ int main()
             printf("token %d: (%s)\n", i, tokens->items[i]);
         }
         
+        
         EnvironmentVars(tokens);
         free(input);
         free_tokens(tokens);
@@ -193,7 +200,15 @@ return 0;
 
 
 
-//FINISHED------------------------
+//__________________________________________________________________________________
+
+
+//__________________________________________________________________________________
+//                                   ENVIRONMENTAL VARIABLES
+
+/* This function replaces every token that starts with a dollar sign
+ * character and replaces it with its corresponding value
+ */
 int EnvironmentVars(tokenlist *tokens){
 
     for (int i = 0; i < tokens->size; i++){
@@ -211,7 +226,12 @@ int EnvironmentVars(tokenlist *tokens){
 }
 
 
-//FINISHED------------------------
+//__________________________________________________________________________________
+//                                      PROMPT
+
+/* This function indicates the working directory, the user name, and the machine name
+ * The format will print: USER@MACHINE : PWD >
+ */
 void prompt(){
     char * getenv(const char *name);
     char * user = getenv("USER");
@@ -222,6 +242,7 @@ void prompt(){
 
 
 }
+
 
 //new path search() feb 3. 11:09
 //External execution
@@ -373,6 +394,62 @@ void background_processing(tokenlist * tokens){
         printf("process is finished");
     }
     
+}
+
+//__________________________________________________________________________________
+//                                      I/O REDIRECTION
+
+/* I/O redirection from/to a file. Shell receives input from keyboard and writes output to
+ * screen. Input redirection (<) will replace keyboard, Output (>) will replace
+ * screen with specified file
+ */
+
+/*  fd  file
+ *  0   keyboard (input)
+ *  1   file (after dup)
+ *  2   screen (output)
+ *  3   file (then this will be closed, so only have 0,1,2)
+ */
+
+//it is creating the file, opening and closing
+int InputOutputRedirection(int argc, char * argv[], tokenlist * tokens) {
+
+    char * filename;
+    pid_t pid = fork();
+    int fd = open(filename, O_WRONLY | O_CREAT); //output
+    int status;
+
+    //------------------------------------------------------STORES & PRINTS FILENAME
+    for (int i = 0; i < tokens->size; i++){
+        if(strcmp(tokens->items[i], ">") == 0){
+            filename = tokens->items[i+1];
+        }
+    }
+
+    //------------------------------------------------------
+
+    char * path = getenv("PATH");
+
+    //child process
+    if (pid == 0){
+        //this will write only to file, and create file if it exists
+        //if file does exist, O_CREAT will not be executed
+        int fd = open(filename, O_WRONLY | O_CREAT); //output
+        close(stdout);
+        dup(fd);
+        close(fd);
+        execv(path, filename);
+
+    }
+
+    else {
+        close(fd); //closing
+        waitpid(pid, status, 0); //waiting for pid (parent process)
+
+    }
+
+    printf("\nFILENAME: %s\n", filename);
+
 }
 
 
