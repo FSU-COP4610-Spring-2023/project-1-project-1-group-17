@@ -308,7 +308,8 @@ int pathSearch(tokenlist * tokens){
     char * colon = strtok(copyPath, ":");
     
     char * bufHit;
-    while(colon != NULL){
+    while(colon != NULL)
+    {
         
         unsigned int length = strlen(colon) + strlen(argv[0]) + 2;
         char buffer[length];
@@ -322,11 +323,32 @@ int pathSearch(tokenlist * tokens){
         if (access(buffer, F_OK) == 0)
         {
             printf("\nBUFFER: %s\n", buffer);
-            bufHit = malloc(strlen(buffer) + 1);
-            strcpy(bufHit, buffer);
+            if(access(buffer, X_OK) == 0)
+            {
+                printf("IT IS GOOD TO EXECUTE\n\n");
+                int pid = fork();
+                if (pid == 0)
+                {
+                    printf("We got to execv\n");
+                    execv(buffer, argv);
+                    printf("we got after exec\n");
+                }
+                else
+                {
+                    waitpid(pid, NULL, 0);
+                }
+                return 0;
+            }
+            else
+            {
+                printf("that isn't executable\n");
+            }
+            //bufHit = malloc(strlen(buffer) + 1);
+            //strcpy(bufHit, buffer);
         }
-        else{
-            printf("there was a probem finding it... \n");
+        else
+        {
+            printf("there was a problem finding it... \n");
         }
        
         
@@ -336,7 +358,7 @@ int pathSearch(tokenlist * tokens){
     }//end while loop
     
     //execute once we have found where the 'ls' is in the file system
-    if(access(bufHit, X_OK) == 0){
+   /*if(access(bufHit, X_OK) == 0){
         printf("IT IS GOOD TO EXECUTE\n\n");
         int pid = fork();
         if (pid == 0){
@@ -349,7 +371,7 @@ int pathSearch(tokenlist * tokens){
     }
     else{
         printf("that isn't executable\n");
-    }
+    }*/
     
     //temp
     return 1;
