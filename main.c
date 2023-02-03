@@ -143,6 +143,7 @@ int main()
     printf("%s", hello);
     free(hello);
     
+    //if arrow call function, then pass in token list
     
     while (1) {
         prompt();
@@ -188,7 +189,15 @@ return 0;
 
 
 
-//FINISHED------------------------
+//__________________________________________________________________________________
+
+
+//__________________________________________________________________________________
+//                                   ENVIRONMENTAL VARIABLES
+
+/* This function replaces every token that starts with a dollar sign
+ * character and replaces it with its corresponding value
+ */
 int EnvironmentVars(tokenlist *tokens){
 
     for (int i = 0; i < tokens->size; i++){
@@ -206,7 +215,12 @@ int EnvironmentVars(tokenlist *tokens){
 }
 
 
-//FINISHED------------------------
+//__________________________________________________________________________________
+//                                      PROMPT
+
+/* This function indicates the working directory, the user name, and the machine name
+ * The format will print: USER@MACHINE : PWD >
+ */
 void prompt(){
     char * getenv(const char *name);
     char * user = getenv("USER");
