@@ -247,71 +247,111 @@ void prompt(){
 //new path search() feb 3. 11:09
 //External execution
 
-int pathSearch(tokenlist * tokens)
-{
+int pathSearch(tokenlist * tokens){
+//----------------ECHO-----------------------------
+    int commandPos = -1;
     
+    int before = 0;
+    int after = 0;
+    
+    for(int i = 0; i < tokens->size; i++){
+        
+        if(strcmp(tokens->items[0], "echo") == 0){
+            
+            //dealing with env vars
+            char dollar = tokens->items[i][0];
+            if(dollar == '$'){
+                //the command will be stored here
+                char * doCommand = getenv(tokens->items[i] + 1);
+                commandPos = i; //lets me know which token has a command
+                
+                after = tokens->size;
+                for (int u = 1 ; u < commandPos; u++){
+                    printf("%s ", tokens->items[u]);
+                }
+                //getenv(tokens->items[commandPos]);
+                printf("%s ", doCommand);  //call the $ command between the regular text
+                for(int a = commandPos + 1; a < after; a++){
+                    printf("%s ", tokens->items[a]);
+                }
+                printf("\n");
+            }
+        }
+    }
+    
+    //----------ENV_VARS-------------------------------
+    for (int i = 0; i < tokens->size; i++){
+
+        char dollar = tokens->items[i][0];
+
+        if(dollar == '$'){
+
+            char * doCommand = getenv(tokens->items[i] + 1);
+            printf("%s", doCommand, "\n");
+            printf("\n");
+        }
+        
+    }
+    //----------------------BUILT_IN_COMMANDS--------------------------
     char * argv[tokens->size];
-    //michael said to make sure argv is null terminated at the end... think this was the fix i needed
-    argv[tokens->size + 1] = NULL;
     
     for(int i = 0; i < tokens->size; i++){
         argv[i] = tokens->items[i];
     }
     
+    argv[tokens->size + 1] = NULL;
+    
+ 
     char * temp_Path= getenv("PATH");
-    char * colon = strtok(temp_Path, ":");
-
-    bool condition = false;
-    while(condition == false){
-        printf("\nNEW LOOP\n");
-        printf("LENGTH OF COLON: \n%d", colon);
-        unsigned int length = strlen(colon) + strlen(argv[0]) + 6;
-       
-        char buffer[length];
-        printf("\nLENGTH OF BUFFER: \n%d", length);
+    char * copyPath = strdup(temp_Path);
+    
+    char * colon = strtok(copyPath, ":");
+    
+    char * bufHit;
+    while(colon != NULL){
         
+        unsigned int length = strlen(colon) + strlen(argv[0]) + 2;
+        char buffer[length];
         strcpy(buffer, colon);
         
         strcat(buffer, "/");
         strcat(buffer, argv[0]);
         
-
-        printf("\nBUFFER: \n");
-        printf("%s\n", buffer); //printing to confirm it works, it does
         
         //do access check
-    
         if (access(buffer, F_OK) == 0)
         {
-            printf("FOUND IT!\n");
-            if(access(buffer, X_OK) == 0){
-                printf("IT IS GOOD TO EXECUTE\n\n");
-                int pid = fork();
-                if (pid == 0)
-                {
-                    execv(buffer, argv);
-                }
-                else
-                {
-                    waitpid(pid, NULL, 0);
-                }
-                condition = true;
-                return 0;
-            }
-            else{
-                printf("that isn't executable\n");
-            }
+            printf("\nBUFFER: %s\n", buffer);
+            bufHit = malloc(strlen(buffer) + 1);
+            strcpy(bufHit, buffer);
         }
         else{
             printf("there was a probem finding it... \n");
-            printf("\nCurrent BUFFER: \n");
-            printf("%s\n", buffer);
         }
+       
         
-        //realloc(colon, length + 10);
         colon = strtok(NULL, ":");
-        printf(colon);
+        
+        
     }//end while loop
+    
+    //execute once we have found where the 'ls' is in the file system
+    if(access(bufHit, X_OK) == 0){
+        printf("IT IS GOOD TO EXECUTE\n\n");
+        int pid = fork();
+        if (pid == 0){
+            execv(bufHit, argv);
+        }
+        else{
+            waitpid(pid, NULL, 0);
+        }
+        return 0;
+    }
+    else{
+        printf("that isn't executable\n");
+    }
+    
+    //temp
     return 1;
 }
 
