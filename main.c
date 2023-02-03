@@ -270,7 +270,57 @@ void pathSearch(tokenlist * tokens){
    
 }
 
+//new path search() feb 3. 11:09
 
+void pathSearch(tokenlist * tokens){
+    
+    char * argv[tokens->size];
+    //michael said to make sure argv is null terminated at the end... think this was the fix i needed
+    argv[tokens->size + 1] = NULL;
+
+    
+    for(int i = 0; i < tokens->size; i++){
+        argv[i] = tokens->items[i];
+    }
+    
+ 
+    char * temp_Path= getenv("PATH");
+    char * colon = strtok(temp_Path, ":");
+
+    while(colon != NULL){
+    
+        unsigned int length = strlen(colon) + strlen(argv[0]) + 2;
+        char buffer[length];
+        strcpy(buffer, colon);
+        
+        strcat(buffer, "/");
+        strcat(buffer, argv[0]);
+        
+       
+       // printf("%s\n", buffer); //printing to confirm it works, it does
+        printf("\nBUFFER: \n");
+        printf("%s\n", buffer); //printing to confirm it works, it does
+        
+        //do access check
+    
+        if (access(buffer, F_OK) == 0)
+        {
+            printf("FOUND IT!\n");
+            if(access(buffer, X_OK) == 0){
+                printf("IT IS GOOD TO EXECUTE\n\n");
+                execv(buffer, argv);
+            }
+            else{
+                printf("that isn't executable\n");
+            }
+        }
+        else{
+            printf("there was a probem finding it... \n");
+        }
+        
+        colon = strtok(NULL, ":");
+    }//end while loop
+}
 
 
 
