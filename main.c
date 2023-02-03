@@ -13,6 +13,7 @@ typedef struct {
     char **items;
 } tokenlist;
 
+//________________________________DECLARATIONS______________________________
 char *get_input(void);
 tokenlist *get_tokens(char *input);
 
@@ -23,6 +24,9 @@ void free_tokens(tokenlist *tokens);
 void tildeExpansion(tokenlist *tokens);
 int EnvironmentVars();
 void prompt();
+
+//__________________________________________________________
+
 
 tokenlist *new_tokenlist(void)
 {
@@ -99,27 +103,6 @@ void free_tokens(tokenlist *tokens)
 }
 
 
-//__________________________________________________________________________________
-void forker(){
-    char *x[2];
-    x[0] = "ls";
-    x[1] = NULL;
-
-    int pid = fork();
-    if(pid == 0)
-    {
-        printf("I am a child process\n");
-        execv(x[0],x); // can't use execvp, but i need to know how to print the actual file names
-        //execvp(x[0], x); this works, but is not allowed?
-    }
-    else
-    {
-        printf("I am the parent process\n");
-        waitpid(pid,NULL,0);
-    }
-    
-    
-}
 //__________________________________________________________________________________
 //                                     Tilde Expansion
 
