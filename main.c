@@ -13,6 +13,8 @@ typedef struct {
     char **items;
 } tokenlist;
 
+
+//________________________________DECLARATIONS______________________________
 char *get_input(void);
 tokenlist *get_tokens(char *input);
 
@@ -22,6 +24,8 @@ void free_tokens(tokenlist *tokens);
 
 int EnvironmentVars();
 void prompt();
+int InputOutputRedirection(int argc, char * argv[], tokenlist * tokens);
+//__________________________________________________________
 
 tokenlist *new_tokenlist(void)
 {
@@ -148,7 +152,8 @@ void tildeExpansion(tokenlist *tokens)
     }
 }
 
-/---
+//__________________________________________________________________________________
+//                                         MAIN
 
 int main()
 {
@@ -193,7 +198,21 @@ int main()
             forker();
         }
         
+        //calling Environmental Variables Function, passing in tokens
         EnvironmentVars(tokens);
+        
+        //This is for I/O Redirection
+                for (int i =0; i < tokens->size; i++){
+                    //output
+                    if(strchr(tokens->items[i], '>') != NULL){
+                        InputOutputRedirection(" ", STDOUT_FILENO, tokens);
+                    }
+                    //input
+                    else if (strchr(tokens->items[i], '<') != NULL){
+                        InputOutputRedirection(" ", STDIN_FILENO, tokens);
+                    }
+                }
+        
         free(input);
         free_tokens(tokens);
         
@@ -205,10 +224,15 @@ int main()
 
 return 0;
 }
+//__________________________________________________________________________________
 
 
+//__________________________________________________________________________________
+//                                   ENVIRONMENTAL VARIABLES
 
-//FINISHED------------------------
+/* This function replaces every token that starts with a dollar sign
+ * character and replaces it with its corresponding value
+ */
 int EnvironmentVars(tokenlist *tokens){
 
     for (int i = 0; i < tokens->size; i++){
@@ -226,7 +250,12 @@ int EnvironmentVars(tokenlist *tokens){
 }
 
 
-//FINISHED------------------------
+//__________________________________________________________________________________
+//                                      PROMPT
+
+/* This function indicates the working directory, the user name, and the machine name
+ * The format will print: USER@MACHINE : PWD >
+ */
 void prompt(){
     char * getenv(const char *name);
     char * user = getenv("USER");
@@ -238,7 +267,62 @@ void prompt(){
 
 }
 
+//__________________________________________________________________________________
+//                                      I/O REDIRECTION
 
+/* I/O redirection from/to a file. Shell receives input from keyboard and writes output to
+ * screen. Input redirection (<) will replace keyboard, Output (>) will replace
+ * screen with specified file
+ */
+
+/*  fd  file
+ *  0   keyboard (input)
+ *  1   file (after dup)
+ *  2   screen (output)
+ *  3   file (then this will be closed, so only have 0,1,2)
+ */
+
+//it is creating the file, opening, closing, and overwriting
+//NEED TO DO: write to file, output to screen 
+int InputOutputRedirection(int argc, char * argv[], tokenlist * tokens) {
+
+    char * filename;
+    pid_t pid = fork();
+    int fd = open(filename, O_WRONLY | O_CREAT); //output
+    int status;
+
+    //------------------------------------------------------STORES & PRINTS FILENAME
+    for (int i = 0; i < tokens->size; i++){
+        if(strcmp(tokens->items[i], ">") == 0){
+            filename = tokens->items[i+1];
+        }
+    }
+
+    //------------------------------------------------------
+
+    char * path = getenv("PATH");
+
+    //child process
+    if (pid == 0){
+        //this will write only to file, and create file if it exists
+        //if file does exist, O_CREAT will not be executed
+        int fd = open(filename, O_WRONLY | O_CREAT); //output
+        close(stdout);
+        dup(fd);
+        close(fd);
+        execv(path, filename);
+
+    }
+
+    else {
+        close(fd); //closing
+        waitpid(pid, status, 0); //waiting for pid (parent process)
+
+    }
+
+    printf("\nFILENAME: %s\n", filename);
+
+}
 
 
 
