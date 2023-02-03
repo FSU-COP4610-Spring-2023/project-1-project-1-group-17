@@ -4,6 +4,8 @@
 #include<unistd.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <stdbool.h>
+
 
 
 
@@ -100,27 +102,6 @@ void free_tokens(tokenlist *tokens)
 
 
 //__________________________________________________________________________________
-void forker(){
-    char *x[2];
-    x[0] = "ls";
-    x[1] = NULL;
-
-    int pid = fork();
-    if(pid == 0)
-    {
-        printf("I am a child process\n");
-        execv(x[0],x); // can't use execvp, but i need to know how to print the actual file names
-        //execvp(x[0], x); this works, but is not allowed?
-    }
-    else
-    {
-        printf("I am the parent process\n");
-        waitpid(pid,NULL,0);
-    }
-    
-    
-}
-//__________________________________________________________________________________
 //                                     Tilde Expansion
 
 /*
@@ -187,12 +168,6 @@ int main()
             printf("token %d: (%s)\n", i, tokens->items[i]);
         }
         
-        //dealing with an ls
-        int compare =strcmp (input, "ls");
-        if(compare == 0){
-            forker();
-        }
-        
         EnvironmentVars(tokens);
         free(input);
         free_tokens(tokens);
@@ -238,43 +213,11 @@ void prompt(){
 
 }
 
-/*void pathSearch(tokenlist * tokens){
-    
-    char * argv[tokens->size];
-    for(int i = 0; i < tokens->size; i++){
-        argv[i] = tokens->items[i];
-    }
-    
- 
-    char * temp_Path= getenv("PATH");
-    char * colon = strtok(temp_Path, ":");
-
-    while(colon != NULL){
-    
-        unsigned int length = strlen(colon) + strlen(argv[0]) + 2;
-        char buffer[length];
-        strcpy(buffer, colon);
-        
-        strcat(buffer, "/");
-        strcat(buffer, argv[0]);
-        
-        //printf("%s\n", buffer); //printing to confirm it works, it does
-        
-        
-        //do access check
-        if (access(buffer, F_OK))
-        {
-            execv(buffer, argv);
-        }
-        
-        colon = strtok(NULL, ":");
-    }//end while loop
-   
-}*/
-
 //new path search() feb 3. 11:09
+//External execution
 
-void pathSearch(tokenlist * tokens){
+int pathSearch(tokenlist * tokens)
+{
     
     char * argv[tokens->size];
     //michael said to make sure argv is null terminated at the end... think this was the fix i needed
@@ -283,16 +226,19 @@ void pathSearch(tokenlist * tokens){
     for(int i = 0; i < tokens->size; i++){
         argv[i] = tokens->items[i];
     }
-    //int checker = 0;
     
- 
     char * temp_Path= getenv("PATH");
     char * colon = strtok(temp_Path, ":");
 
-    while(colon != NULL){
-    
-        unsigned int length = strlen(colon) + strlen(argv[0]) + 2;
+    bool condition = false;
+    while(condition == false){
+        printf("\nNEW LOOP\n");
+        printf("LENGTH OF COLON: \n%d", colon);
+        unsigned int length = strlen(colon) + strlen(argv[0]) + 6;
+       
         char buffer[length];
+        printf("\nLENGTH OF BUFFER: \n%d", length);
+        
         strcpy(buffer, colon);
         
         strcat(buffer, "/");
@@ -306,12 +252,7 @@ void pathSearch(tokenlist * tokens){
     
         if (access(buffer, F_OK) == 0)
         {
-            //printf("FOUND IT!\n");
-            /*if(checker == 1)
-            {
-                return(0);
-            }*/
-            //checker ++;
+            printf("FOUND IT!\n");
             if(access(buffer, X_OK) == 0){
                 printf("IT IS GOOD TO EXECUTE\n\n");
                 int pid = fork();
@@ -323,6 +264,7 @@ void pathSearch(tokenlist * tokens){
                 {
                     waitpid(pid, NULL, 0);
                 }
+                condition = true;
                 return 0;
             }
             else{
@@ -331,10 +273,64 @@ void pathSearch(tokenlist * tokens){
         }
         else{
             printf("there was a probem finding it... \n");
+            printf("\nCurrent BUFFER: \n");
+            printf("%s\n", buffer);
         }
         
+        //realloc(colon, length + 10);
         colon = strtok(NULL, ":");
+        printf(colon);
     }//end while loop
+    return 1;
+}
+
+//PIPING
+void pipeHandler()
+{
+    int pfds[2];
+    pipe(pfds);
+
+    int pid0 = 0, pid1 = 0;
+
+    pid0 = fork();
+    if (pid0 != 0)
+    {
+        //if pid0 returns error, fork pid1
+        pid1 = fork();
+    }
+    if(pid0 == 0)
+    {
+        //child process (first command)
+        close(1);
+        dup(pfds[1]);   //duplicate
+        close(pfds[0]);
+        close(pfds[1]);
+
+        //execv() //execute here... args in params
+
+        //exit(1);
+
+    }
+    //second process id
+
+    if(pid1 == 0)
+    {
+        close(0);
+        dup(pfds[0]);
+        close(pfds[0]);
+        close(pfds[1]);
+
+        //execv();
+    }
+    if(pid0 != 0 && pid1 != 0)
+    {
+        close(pfds[0]);
+        close(pfds[1]);
+
+        //waiting for child process to execute
+        waitpid(pfds[0], pfds, pid0);
+        waitpid(pfds[1], pfds, pid1);
+    }
 }
 
 
