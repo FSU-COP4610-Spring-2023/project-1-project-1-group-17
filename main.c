@@ -133,6 +133,8 @@ void tildeExpansion(tokenlist *tokens)
 }
 
 
+//__________________________________________________________________________________
+//
 int main()
 {
 
@@ -170,11 +172,6 @@ int main()
             printf("token %d: (%s)\n", i, tokens->items[i]);
         }
         
-        //dealing with an ls
-        int compare =strcmp (input, "ls");
-        if(compare == 0){
-            forker();
-        }
         
         EnvironmentVars(tokens);
         free(input);
