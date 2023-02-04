@@ -169,13 +169,13 @@ int main()
         }
         
         //PIPING
-        for (int i = 0; i < tokens->size; i++)
+        /*for (int i = 0; i < tokens->size; i++)
         {
             if (strchr(tokens->items[i], '|') != NULL)
             {
                 pipeHandler();
             }
-        }
+        }*/
 
         pathSearch(tokens);
 
