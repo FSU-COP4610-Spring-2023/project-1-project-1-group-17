@@ -413,7 +413,7 @@ void pipeHandler(tokenlist * tokens)
         close(pfds[1]);
 
         //execv() //execute here... args in params
-        pathSearch()
+        //pathSearch();
 
         //exit(1);
 
