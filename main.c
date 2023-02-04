@@ -378,11 +378,24 @@ int pathSearch(tokenlist * tokens){
 }
 
 //PIPING
-void pipeHandler()
+void pipeHandler(tokenlist * tokens)
 {
+    char * cmd1;
+    char * cmd2;
+
+    for (int i = 0; i < tokens->size; i++)
+    {
+        if(strcmp(tokens->items[i], "|"))
+        {
+            cmd1 = tokens->items[i-1];
+            cmd2 = tokens->items[i+2];
+            break;
+        }
+    }
     int pfds[2];
     pipe(pfds);
-
+    
+    
     int pid0 = 0, pid1 = 0;
 
     pid0 = fork();
@@ -400,6 +413,7 @@ void pipeHandler()
         close(pfds[1]);
 
         //execv() //execute here... args in params
+        pathSearch()
 
         //exit(1);
 
@@ -529,7 +543,7 @@ int cd2(tokenlist * tokens){
     
     if(chdir(target) == 0){ //successful
         getcwd(path, strlen(path));
-        setenv("PWD", path, 1); //1 means overwrite
+        setenv("PWD", target, 1); //1 means overwrite
     }
     else{
         perror("WE are getting stuck here...");
@@ -537,8 +551,8 @@ int cd2(tokenlist * tokens){
     
     //setenv("PWD", cwd, 1);
     free(cwd); //they say this is important...
-    
-    
+
+
     //temporary
     return 1;
 }
