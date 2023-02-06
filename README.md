@@ -73,4 +73,4 @@ Second Bug:
 
 
 ## How to compile our executables using our Makefile: 
-- 
+- Clone this repository to your local directory and type "make" in your terminal to compile the executables. Run by typing "shell".
