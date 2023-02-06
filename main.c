@@ -572,6 +572,67 @@ int cd2(tokenlist * tokens){
 
 
 
+//___________________________background processing text parsing___________________________________
+
+//send to background,
+    //when execution starts: print [Job number] [the command's PID]
+    //when execution ends: print [Job number] [the command's command line]
+
+    
+    //getting all the commands we want to run in the background into the list 'cmdList'
+    int cmdCounter = 1;
+    char * cmdList[3];
+    cmdList[0] = "";
+    cmdList[1] = "";
+    cmdList[2] = "";
+    
+    for(int i = 0; i < tokens->size; i++){
+        if(strcmp(tokens->items[i], "&") == 0){ //means we have to make whole line background processes
+            
+            cmdList[0] = tokens->items[i - 1];  //if there is 1 cmd
+            
+            if(cmdCounter == 1){
+                cmdList[0] = tokens->items[i -1];
+                cmdList[1] = NULL;
+                cmdList[2] = NULL;
+            }
+            if(cmdCounter == 2){
+                cmdList[0] = tokens->items[0];
+                cmdList[1] = tokens->items[i - 1];
+                cmdList[2] = NULL;
+            }
+            if(cmdCounter == 3){
+                if(strcmp(tokens->items[i], "|") == 0){
+                    cmdList[1] = tokens->items[i - 1];
+                }
+                cmdList[0] = tokens->items[0];
+                cmdList[2] = tokens->items[i -1];
+            }
+            
+            //getenv(tokens->items[i - 1]);
+            //pid_t waitpid(pid_t pid, int *stat_loc, int options);
+            //WNOHANG - waitpid returns immediately with finish status
+        }
+        if(strcmp(tokens->items[i], "|") == 0){ //need to make every command on the line exec in the background
+            cmdCounter++;
+            cmdList[1] = tokens->items[i - 1];
+            if(cmdCounter > 2){
+                cmdList[2] = tokens->items[i + 3];
+            }
+            
+        }
+        
+        
+        
+    }
+
+    for(int u = 0; u < 3; u++){
+        printf("List of background commands: %d, %s\n", u, cmdList[u]);
+    }
+
+//need to do waitpid/execute all the things inside of cmdList[]
+
+//___________________________background processing text parsing___________________________________
 
 
 
