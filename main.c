@@ -26,6 +26,8 @@ void free_tokens(tokenlist *tokens);
 void tildeExpansion(tokenlist *tokens);
 int EnvironmentVars();
 void prompt();
+void pipeHandler(tokenlist *tokens);
+char * pathSearch(tokenlist *tokens);
 
 //__________________________________________________________
 
@@ -38,6 +40,7 @@ tokenlist *new_tokenlist(void)
     tokens->items[0] = NULL; /* make NULL terminated */
     return tokens;
 }
+
 
 void add_token(tokenlist *tokens, char *item)
 {
@@ -169,15 +172,15 @@ int main()
         }
         
         //PIPING
-        /*for (int i = 0; i < tokens->size; i++)
+        for (int i = 0; i < tokens->size; i++)
         {
             if (strchr(tokens->items[i], '|') != NULL)
             {
-                pipeHandler();
+                pipeHandler(tokens);
             }
-        }*/
+        }
 
-        pathSearch(tokens);
+        //pathSearch(tokens);
 
 
         for (int i = 0; i < tokens->size; i++) {
@@ -247,7 +250,7 @@ void prompt(){
 //new path search() feb 3. 11:09
 //External execution
 
-int pathSearch(tokenlist * tokens){
+char * pathSearch(tokenlist * tokens){
 //----------------ECHO-----------------------------
     int commandPos = -1;
     
@@ -337,7 +340,7 @@ int pathSearch(tokenlist * tokens){
                 {
                     waitpid(pid, NULL, 0);
                 }
-                return 0;
+                return buffer;
             }
             else
             {
@@ -357,22 +360,6 @@ int pathSearch(tokenlist * tokens){
         
     }//end while loop
     
-    //execute once we have found where the 'ls' is in the file system
-   /*if(access(bufHit, X_OK) == 0){
-        printf("IT IS GOOD TO EXECUTE\n\n");
-        int pid = fork();
-        if (pid == 0){
-            execv(bufHit, argv);
-        }
-        else{
-            waitpid(pid, NULL, 0);
-        }
-        return 0;
-    }
-    else{
-        printf("that isn't executable\n");
-    }*/
-    
     //temp
     return 1;
 }
@@ -380,18 +367,40 @@ int pathSearch(tokenlist * tokens){
 //PIPING
 void pipeHandler(tokenlist * tokens)
 {
-    char * cmd1;
-    char * cmd2;
-
-    for (int i = 0; i < tokens->size; i++)
+    printf("\nWE ARE IN THE PIPE FUNCTION!!\n");
+    //parse commands into separate tokens then get buffer with path
+    char * argv1[tokens->size];
+    int index = 0;
+    for(int i = 0; i < tokens->size; i++)
     {
-        if(strcmp(tokens->items[i], "|"))
+        if (tokens->items[i] == "|")
         {
-            cmd1 = tokens->items[i-1];
-            cmd2 = tokens->items[i+2];
+            //index = i;
             break;
         }
+        argv1[i] = tokens->items[i];
+        index++;
     }
+    argv1[index + 1] = NULL;
+    printf("\nPRINTING ARGV1\n");
+    for(int i = 0; i < index; i++)
+    {
+        printf(argv1[i]);
+    }
+    
+    tokenlist * cmd1Tokens = get_tokens(argv1);
+
+    char * argv2[tokens->size];
+    index++;
+    int begin = 0;
+    for(int i = index; i < tokens->size; i++)
+    {
+        argv2[0] = tokens->items[i];
+        begin++;
+    }
+    argv2[begin + 1] = NULL;
+
+    char * buffer;
     int pfds[2];
     pipe(pfds);
     
@@ -412,10 +421,10 @@ void pipeHandler(tokenlist * tokens)
         close(pfds[0]);
         close(pfds[1]);
 
-        //execv() //execute here... args in params
-        //pathSearch();
+        buffer = pathSearch(argv1);
+        printf(buffer);
+        execv(buffer, argv1);
 
-        //exit(1);
 
     }
     //second process id
@@ -427,7 +436,9 @@ void pipeHandler(tokenlist * tokens)
         close(pfds[0]);
         close(pfds[1]);
 
-        //execv();
+        buffer = pathSearch(argv2);
+        printf(buffer);
+        execv(buffer, argv2);
     }
     if(pid0 != 0 && pid1 != 0)
     {
