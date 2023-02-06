@@ -1,17 +1,17 @@
-# Name: Jeffrey Abbinante, BS
+# Name: Emma Baudo, Thomas Vogt, and Daniel Pijeira
 # Professor: Andy Wang, PhD
 # Class: COP 4610
 # Project: 1
-# Description: This is the Project 1 makefile (parser demo).
+# Description: This is the Project 1 makefile.
 
-BINS = main
+BINS = shell
 C = gcc
 CFLAGS = -std=gnu99 -Wall -pedantic -g
 
 all: $(BINS)
 
-main: main.c
-	$(C) $(CFLAGS) -o main main.c
+shell: main.c
+	$(C) $(CFLAGS) -o shell main.c
 
 clean:
 	rm $(BINS)
