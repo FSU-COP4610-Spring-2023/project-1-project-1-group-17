@@ -660,21 +660,21 @@ void InputOutputRedirection(tokenlist * tokens) {
 void Exit(tokenlist * tokens){
 
     int valid_cmd_count = 0;
+    char * argv1[tokens->size];
     char * valid_commands[3];
 
-    char * argv1[tokens->size];
+    
 
     //wait for background process to finish
     waitpid(-1, NULL, 0);
-    //need to store each comment and assign it to a list
-
+    
+    int valid;
     for (int i = 0; i < tokens->size; i++) {
         argv1[i] = tokens->items[i];
 
-        if (execv(argv1, argv1) == -1) {
-            printf("We are getting here...");
+        valid = system(argv1[i]);
 
-            //i stopped here....
+        if (valid == 0) {//if command is valid, store it in our little array of valid_commands[]
             valid_commands[valid_cmd_count % 3] = argv1[i];
             valid_cmd_count++;
         }
@@ -701,6 +701,7 @@ void Exit(tokenlist * tokens){
     }
 
 }
+
 
 
 void cd_command (int argc, char * argv[], tokenlist * tokens)
