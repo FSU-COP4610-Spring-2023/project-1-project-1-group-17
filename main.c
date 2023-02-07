@@ -234,7 +234,7 @@ int main()
         
         
         EnvironmentVars(tokens);
-        InputOutputRedirection(tokens);
+        //InputOutputRedirection(tokens);
         
         free(input);
         free_tokens(tokens);
@@ -620,10 +620,13 @@ void InputOutputRedirection(tokenlist * tokens) {
         }
     }
 
+    int tokenLen = 0;
     //storing the text that we want to send to the file...
     for(int j = begintext; j < endtext + 1; j++){
-        int tokenLen = strlen(tokens->items[j]);
-        if (bufferSize + tokenLen >= sizeof(buffer)){
+
+        tokenLen = strlen(tokens->items[j]);
+       
+       if (bufferSize + tokenLen >= sizeof(buffer)){
             break;
         }
         memcpy(buffer + bufferSize, tokens->items[j], tokenLen);
