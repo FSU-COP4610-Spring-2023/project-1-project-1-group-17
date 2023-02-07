@@ -26,6 +26,9 @@ void free_tokens(tokenlist *tokens);
 void tildeExpansion(tokenlist *tokens);
 int EnvironmentVars();
 void prompt();
+void InputOutputRedirection(tokenlist * tokens);
+void Exit(tokenlist * tokens);
+void cd_command (int argc, char * argv[], tokenlist * tokens);
 void pipeHandler(tokenlist *tokens);
 char * pathSearch(tokenlist *tokens);
 
@@ -211,11 +214,16 @@ int main()
 
 
         for (int i = 0; i < tokens->size; i++) {
-            printf("token %d: (%s)\n", i, tokens->items[i]);
+            //printf("token %d: (%s)\n", i, tokens->items[i]); (excessive printing, don't need)
+            if (tokens->size > 0 && strcmp(tokens->items[i], "exit") == 0) {
+                Exit(tokens);
+            }
         }
         
         
         EnvironmentVars(tokens);
+        InputOutputRedirection(tokens);
+        
         free(input);
         free_tokens(tokens);
         
@@ -504,61 +512,7 @@ void pipeHandler(tokenlist * tokens)
     
 }*/
 
-//__________________________________________________________________________________
-//                                      I/O REDIRECTION
 
-/* I/O redirection from/to a file. Shell receives input from keyboard and writes output to
- * screen. Input redirection (<) will replace keyboard, Output (>) will replace
- * screen with specified file
- */
-
-/*  fd  file
- *  0   keyboard (input)
- *  1   file (after dup)
- *  2   screen (output)
- *  3   file (then this will be closed, so only have 0,1,2)
- */
-
-//it is creating the file, opening and closing
-int InputOutputRedirection(int argc, char * argv[], tokenlist * tokens) {
-
-    char * filename;
-    pid_t pid = fork();
-    int fd = open(filename, O_WRONLY | O_CREAT); //output
-    int status;
-
-    //------------------------------------------------------STORES & PRINTS FILENAME
-    for (int i = 0; i < tokens->size; i++){
-        if(strcmp(tokens->items[i], ">") == 0){
-            filename = tokens->items[i+1];
-        }
-    }
-
-    //------------------------------------------------------
-
-    char * path = getenv("PATH");
-
-    //child process
-    if (pid == 0){
-        //this will write only to file, and create file if it exists
-        //if file does exist, O_CREAT will not be executed
-        int fd = open(filename, O_WRONLY | O_CREAT); //output
-        close(stdout);
-        dup(fd);
-        close(fd);
-        execv(path, filename);
-
-    }
-
-    else {
-        close(fd); //closing
-        waitpid(pid, status, 0); //waiting for pid (parent process)
-
-    }
-
-    printf("\nFILENAME: %s\n", filename);
-
-}
 //cd (change directory)
 int cd2(tokenlist * tokens){
     
@@ -685,8 +639,183 @@ void background_processing(tokenlist *tokens)
 }
 
 
+//__________________________________________________________________________________
+//                                      I/O REDIRECTION
+
+/* I/O redirection from/to a file. Shell receives input from keyboard and writes output to
+ * screen. Input redirection (<) will replace keyboard, Output (>) will replace
+ * screen with specified file
+ */
+
+/*  fd  file
+ *  0   keyboard (input)
+ *  1   file (after dup)
+ *  2   screen (output)
+ *  3   file (then this will be closed, so only have 0,1,2)
+ */
+
+//it is creating the file, opening and closing
+
+void InputOutputRedirection(tokenlist * tokens) {
+
+    char * filename;
+    int fd, fd1; //output
+    int status;
+    char buffer[200]; //stores string
+
+    waitpid(-1, NULL, 0); //waits for any background processing to finish
+
+    int begintext = -1;
+    int endtext = -1;
+    for (int i = 0; i < tokens->size; i++){
+        if(strcmp(tokens->items[i], "cmd") == 0){
+            begintext = i + 1;
+        }
+        if(strcmp(tokens->items[i], ">") == 0 || (tokens->items[i], "<") == 0){
+            endtext = i - 1;
+            filename = tokens->items[i+1];
+        }
+    }
+
+    //storing the text that we want to send to the file...
+    char * argv1[tokens->size];
+    for(int j = begintext; j < endtext + 1; j++){
+        argv1[j] = tokens->items[j];
+        buffer[j] = tokens->items[j];
+    }
 
 
+    char * path = getenv("PATH");
+
+    //**********************don't change***********************
+    fd = creat(filename, 0644); //output
+    close(stdout);
+    buffer[fd] = dup(STDOUT_FILENO);
+    dup2(fd1, STDOUT_FILENO);
+
+    close(fd1);
+    pid_t pid = fork();
+    //child process
+    if (pid == 0){
+        close(fd);
+        execv(path, argv1);
+
+    }
+    else {
+        close(fd); //closing
+        waitpid(pid, status, 0); //waiting for pid (parent process)
+
+    }
+    dup2(fd, STDOUT_FILENO);
+
+}
+//**********************don't change ^ ***********************
+
+//must wait for all background processes
+void Exit(tokenlist * tokens){
+
+    int valid_cmd_count = 0;
+    char * valid_commands[3];
+
+    char * argv1[tokens->size];
+
+    //wait for background process to finish
+    waitpid(-1, NULL, 0);
+    //need to store each comment and assign it to a list
+
+    for (int i = 0; i < tokens->size; i++) {
+        argv1[i] = tokens->items[i];
+
+        if (execv(argv1, argv1) == -1) {
+            printf("We are getting here...");
+
+            //i stopped here....
+            valid_commands[valid_cmd_count % 3] = argv1[i];
+            valid_cmd_count++;
+        }
+    }
+
+    if (valid_cmd_count == 3){
+
+        printf("The following were the last three valid commands executed: \n");
+        printf("1. %s", valid_commands[(valid_cmd_count - 1) % 3]);
+        printf("\n"); // want to store oldest command here
+        printf("2. %s", valid_commands[(valid_cmd_count - 2) % 3]);
+        printf("\n");
+        printf("3. %s", valid_commands[(valid_cmd_count - 3) % 3]);
+        printf("\n");
+    }
+    else if (valid_cmd_count < 3){
+        printf("The last valid command executed was: %s\n",valid_commands[(valid_cmd_count - 1) % 3]);
+        printf("\n");
+    }
+    else
+    {
+        printf("No valid commands were executed in this shell \n");
+        printf("\n");
+    }
+
+}
+
+
+void cd_command (int argc, char * argv[], tokenlist * tokens)
+{
+    //char * path = getenv("PATH");
+    tildeExpansion(tokens);
+    EnvironmentVars(tokens);
+
+    for(int i = 0; i < tokens->size; i++){
+        if (strchr(tokens->items[i], "cd") == 0){
+            //path = tokens->items[i+1];
+        }
+    }
+    // Signals an error if more than one argument is present
+    if (argc > 2) {
+        printf(stderr, "Error: More than one argument is present.\n");
+        return;
+    }
+
+    char * path;
+    // If no arguments are supplied, change the current working directory to $HOME
+    if (argc == 1) {
+        path = getenv("HOME");
+    }
+    else {
+        path = argv[1];
+    }
+
+    // Implement tilde and environmental expansion
+    //if no arguments supplied, change directory to $HOME
+    if (path[0] == '~') {
+        char *home = getenv("HOME");
+        if (home == NULL) {
+            printf(stderr, "Error: HOME environment variable not set.\n");
+            return;
+        }
+        int len = strlen(home) + strlen(path) - 1;
+        char expanded_path[len];
+        strcpy(expanded_path, home);
+        strcat(expanded_path, path + 1);
+        path = expanded_path;
+    } else {
+        char *env_var = getenv(path);
+        if (env_var != NULL) {
+            path = env_var;
+        }
+    }
+
+    // Signal an error if the target is not a directory
+    if (!opendir(path)) {
+        fprintf(stderr, "Error: Target is not a directory.\n");
+        return;
+    }
+
+    // Signal an error if the target does not exist
+    if (chdir(path) == -1) {
+        fprintf(stderr, "Error: Target does not exist.\n");
+        return;
+    }
+}
 
 
 
