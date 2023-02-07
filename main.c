@@ -601,9 +601,10 @@ void background_processing(tokenlist *tokens)
 void InputOutputRedirection(tokenlist * tokens) {
 
     char * filename;
-    int fd, fd1; //output
+    int fd; //output
     int status;
     char buffer[200]; //stores string
+    int bufferSize = 0;
 
     waitpid(-1, NULL, 0); //waits for any background processing to finish
 
@@ -620,38 +621,35 @@ void InputOutputRedirection(tokenlist * tokens) {
     }
 
     //storing the text that we want to send to the file...
-    char * argv1[tokens->size];
     for(int j = begintext; j < endtext + 1; j++){
-        argv1[j] = tokens->items[j];
-        buffer[j] = tokens->items[j];
+        int tokenLen = strlen(tokens->items[j]);
+        if (bufferSize + tokenLen >= sizeof(buffer)){
+            break;
+        }
+        memcpy(buffer + bufferSize, tokens->items[j], tokenLen);
+        bufferSize += tokenLen;
+        buffer[bufferSize++] = ' ';
     }
+    buffer[bufferSize] = '\0';
 
 
-    char * path = getenv("PATH");
+    fd = creat(filename, 0644); // open the file for writing
+    write(fd, buffer, bufferSize); // write the contents of buffer to the file
 
-    //**********************don't change***********************
-    fd = creat(filename, 0644); //output
-    close(stdout);
-    buffer[fd] = dup(STDOUT_FILENO);
-    dup2(fd1, STDOUT_FILENO);
 
-    close(fd1);
-    pid_t pid = fork();
-    //child process
+    pid_t pid = fork(); // forking
     if (pid == 0){
-        close(fd);
-        execv(path, argv1);
-
+        close(fd); // closing the file descriptor
+        char * path = getenv("PATH"); // getting path
+        execv(path, buffer);
     }
     else {
-        close(fd); //closing
-        waitpid(pid, status, 0); //waiting for pid (parent process)
-
+        close(fd);
+        waitpid(pid, status, 0); //waiting for parent process
     }
-    dup2(fd, STDOUT_FILENO);
 
 }
-//**********************don't change ^ ***********************
+
 
 //must wait for all background processes
 void Exit(tokenlist * tokens){
