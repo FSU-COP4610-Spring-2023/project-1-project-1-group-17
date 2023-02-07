@@ -5,6 +5,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <stdbool.h>
+#include <dirent.h>
 
 
 
@@ -255,7 +256,7 @@ return 0;
 /* This function replaces every token that starts with a dollar sign
  * character and replaces it with its corresponding value
  */
-int EnvironmentVars(tokenlist *tokens){
+void EnvironmentVars(tokenlist *tokens){
 
     for (int i = 0; i < tokens->size; i++){
 
@@ -520,39 +521,6 @@ void pipeHandler(tokenlist * tokens)
     }
     
 }*/
-
-
-//cd (change directory)
-int cd2(tokenlist * tokens){
-    
-    char * target; //stores directory we want to change to
-    for(int i = 0; i < tokens->size; i++){
-        if(strcmp(tokens->items[i], "cd") == 0){
-            target = tokens->items[i + 1];
-        }
-    }
-
-    //2 step process, chdir and $PWD
-    char * path= getenv("PATH");
-    char *  cwd = getcwd(NULL, 0);
-    
-    if(chdir(target) == 0){ //successful
-        getcwd(path, strlen(path));
-        setenv("PWD", target, 1); //1 means overwrite
-    }
-    else{
-        perror("WE are getting stuck here...");
-    }
-    
-    //setenv("PWD", cwd, 1);
-    free(cwd); //they say this is important...
-
-
-    //temporary
-    return 1;
-}
-
-
 
 
 
