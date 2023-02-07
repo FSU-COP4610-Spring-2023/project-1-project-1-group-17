@@ -549,12 +549,13 @@ void background_processing(tokenlist *tokens)
             pids[u] = fork();
             if(pids[u] == 0){
                 //child process
-                
+                printf("%d  %d",activeJobs[j].id, activeJobs[j].pid);
             }
             else{
                 //parent process
                 waitpid(pids[u], &status, 0);//make it run in the background
                 add_job(pids[u], cmdList[u]); //add it to list of processes running
+                printf("%d  %d  %s",activeJobs[j].id, activeJobs[j].pid, activeJobs[j].cmd);
             }
         
         }
