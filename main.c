@@ -32,6 +32,7 @@ void Exit(tokenlist * tokens);
 void cd_command (tokenlist * tokens);
 void pipeHandler(tokenlist *tokens);
 char * pathSearch(tokenlist *tokens);
+void background_processing(tokenlist * tokens);
 
 
 #define MAX_JOBS 100
@@ -241,9 +242,6 @@ int main()
         
        
     }
-    
-    return(0);
-
 return 0;
 }
 
@@ -708,8 +706,8 @@ void cd_command (tokenlist * tokens)
     char *home = getenv("HOME");
     char * pwd = getenv("PWD");
     
-    tildeExpansion(tokens);
-    EnvironmentVars(tokens);
+    //tildeExpansion(tokens);
+    //EnvironmentVars(tokens);
 
     for(int i = 0; i < tokens->size; i++){
         if (strcmp(tokens->items[i], "cd") == 0){
