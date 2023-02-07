@@ -28,7 +28,7 @@ Danny Pijeira, Thomas Vogt
 Danny Pijeira, Thomas Vogt
 
 ### Part 7 (I/O Redirection): 
-Emma Baudo
+Emma Baudo, Thomas Vogt
 
 ### Part 8 (Piping):
 Thomas Vogt, Danny Pijeira
@@ -47,13 +47,20 @@ First Bug:
     
 Second Bug: 
     - For part 7: I/O redirection, Emma had a seg fault during runtime. The bug started at 5:00 pm on 2/2/23. The issue was with the strchr. This library function searches for the first occurence of a character. It was looking for the  characters for input and output in the string entered by the user for tokens -> items[i]. This library function did not work and caused a seg fault until it was changed to strcmp. The compares 2 strings character by character. If the strings turn out to be equal, then the function will return 0. To fix this issue, the new if statement inside the for loop that stores the filename entered by the user, uses strcmp. This will check if the input and output characters occur in th string entered. 
-
+Third Bug: 
+    - 
 
 ## Current finished portions of the project: 
 - Parsing 
 - Environmental Variables 
 - Prompt 
 - Tilde Exapansion 
+- $PATH search 
+- External Command Execution (ls with flags works, and other commands, but not ls by itself)
+
+
+## Unfinished portions 
+- 
 
 
 ## Extra Credit completed: 
