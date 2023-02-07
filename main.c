@@ -369,7 +369,7 @@ void pipeHandler(tokenlist * tokens)
     int index = 0;
     for(int i = 0; i < tokens->size; i++)
     {
-        if (tokens->items[i] == "|")
+        if (strcmp(tokens->items[i], "|"))
         {
             //index = i;
             break;
@@ -441,8 +441,7 @@ void pipeHandler(tokenlist * tokens)
         close(pfds[1]);
 
         //waiting for child process to execute
-        waitpid(pfds[0], pfds, pid0);
-        waitpid(pfds[1], pfds, pid1);
+        waitpid(pid0, NULL, 0);
     }
 }
 
@@ -574,6 +573,19 @@ int cd2(tokenlist * tokens){
     //when execution ends: print [Job number] [the command's command line]
 void background_processing(tokenlist *tokens)
 {
+
+    #define MAX_JOBS 100
+    int job_num = 0;
+
+    struct job{
+        int id;
+        pid_t pid;
+        char cmd[1000];
+    };
+
+    //job jobs[MAX_JOBS];
+
+
     //getting all the commands we want to run in the background into the list 'cmdList'
     int cmdCounter = 1;
     char *cmdList[3];
@@ -624,6 +636,7 @@ void background_processing(tokenlist *tokens)
     }
 }
 //need to do waitpid/execute all the things inside of cmdList[]
+
 
 //___________________________background processing text parsing___________________________________
 
