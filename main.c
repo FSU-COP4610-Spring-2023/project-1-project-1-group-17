@@ -736,22 +736,70 @@ void Exit(tokenlist * tokens){
 
 void cd_command (int argc, char * argv[], tokenlist * tokens)
 {
-    //char * path = getenv("PATH");
+    char * targetDirectory;
+    char * path = getenv("HOME"); //path is home by default
+    char *home = getenv("HOME");
+    char * pwd = getenv("PWD");
+    
     tildeExpansion(tokens);
     EnvironmentVars(tokens);
 
     for(int i = 0; i < tokens->size; i++){
-        if (strchr(tokens->items[i], "cd") == 0){
-            //path = tokens->items[i+1];
-        }
+        if (strcmp(tokens->items[i], "cd") == 0){
+            targetDirectory = tokens->items[i+1];
+            
+            chdir(targetDirectory); //go to specified directory
+            
+            if (strcmp(tokens->items[i + 1], "~") == 0) { //if we are given ~ after cd, go home
+                
+                if (home == NULL) {
+                    printf(stderr, "Error: HOME environment variable not set.\n");
+                    return;
+                }
+                chdir(home);
+        
+            }
+            else if(strcmp(tokens->items[i + 1], " ") == 0){ //if nothing follows cd, go home
+                chdir(home);
+            }
+            else if(strcmp(tokens->items[i + 1], "..") == 0){ //if .. follows cd, go back a directory
+                char * backone;
+                /*
+                for(int j = strlen(pwd)-1; j >= 0; j--)
+                {
+                  
+                    if(strcmp(pwd[j], "/") == 0){
+                        backone = pwd[j -1];
+                    }
+                     
+                }
+                 */
+                chdir("..");
+            }
+        }//end cd check
+        
+      
+    }//end for loop
+    
+    
+    //try to go to the directory the user specified
+    if (!opendir(targetDirectory)) {
+        fprintf(stderr, "Error: Target is not a directory.\n");
+        return;
     }
+    if (chdir(targetDirectory) == -1) {
+        fprintf(stderr, "Error: Target does not exist.\n");
+        return;
+    }
+    
+    
+    
     // Signals an error if more than one argument is present
     if (argc > 2) {
         printf(stderr, "Error: More than one argument is present.\n");
         return;
     }
 
-    char * path;
     // If no arguments are supplied, change the current working directory to $HOME
     if (argc == 1) {
         path = getenv("HOME");
@@ -760,37 +808,9 @@ void cd_command (int argc, char * argv[], tokenlist * tokens)
         path = argv[1];
     }
 
-    // Implement tilde and environmental expansion
-    //if no arguments supplied, change directory to $HOME
-    if (path[0] == '~') {
-        char *home = getenv("HOME");
-        if (home == NULL) {
-            printf(stderr, "Error: HOME environment variable not set.\n");
-            return;
-        }
-        int len = strlen(home) + strlen(path) - 1;
-        char expanded_path[len];
-        strcpy(expanded_path, home);
-        strcat(expanded_path, path + 1);
-        path = expanded_path;
-    } else {
-        char *env_var = getenv(path);
-        if (env_var != NULL) {
-            path = env_var;
-        }
-    }
+   
 
-    // Signal an error if the target is not a directory
-    if (!opendir(path)) {
-        fprintf(stderr, "Error: Target is not a directory.\n");
-        return;
-    }
-
-    // Signal an error if the target does not exist
-    if (chdir(path) == -1) {
-        fprintf(stderr, "Error: Target does not exist.\n");
-        return;
-    }
+    
 }
 
 
