@@ -220,8 +220,8 @@ int main()
             }
         }
 
-        background_processing(tokens);
-        //cd_command(tokens);
+        //background_processing(tokens);
+        cd_command(tokens);
         pathSearch(tokens);
 
 
@@ -545,14 +545,16 @@ void background_processing(tokenlist *tokens)
     for(int u = 0; u < 3; u++){
         if(cmdList[u] != NULL){
             pids[u] = fork();
-            if(pids[u] == 0){
+            if(pids[u] == 0)
+            {
                 //child process
-                
+                //execv();
+                add_job(pids[u], cmdList[u]); 
             }
             else{
                 //parent process
-                waitpid(pids[u], &status, 0);//make it run in the background
-                add_job(pids[u], cmdList[u]); //add it to list of processes running
+                waitpid(pids[u], &status, WNOHANG);//make it run in the background
+                //add_job(pids[u], cmdList[u]); //add it to list of processes running
             }
         
         }
