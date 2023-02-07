@@ -204,7 +204,7 @@ int main()
         //Tilde Expansion
         for (int i = 0; i < tokens->size; i++)
         {
-            if(strchr(tokens->items[i], '~') != NULL)
+            if((strchr(tokens->items[i], '~') != NULL) && (strcmp(tokens->items[i- 1], "cd") != 0))
             {
                 tildeExpansion(tokens);
             }
@@ -218,6 +218,8 @@ int main()
                 pipeHandler(tokens);
             }
         }
+
+        background_processing(tokens);
         //cd_command(tokens);
         pathSearch(tokens);
 
@@ -390,12 +392,7 @@ char * pathSearch(tokenlist * tokens){
                 printf("that isn't executable\n");
             }
         }
-        else
-        {
-            printf("there was a problem finding it... \n");
-        }
        
-        
         colon = strtok(NULL, ":");
         
         
@@ -704,7 +701,7 @@ void Exit(tokenlist * tokens){
 
 
 
-void cd_command (int argc, char * argv[], tokenlist * tokens)
+void cd_command (tokenlist * tokens)
 {
     char * targetDirectory;
     char * path = getenv("HOME"); //path is home by default
