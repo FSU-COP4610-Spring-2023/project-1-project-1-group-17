@@ -180,7 +180,7 @@ int main()
             }
         }
 
-        //pathSearch(tokens);
+        pathSearch(tokens);
 
 
         for (int i = 0; i < tokens->size; i++) {
@@ -247,9 +247,9 @@ void prompt(){
 }
 
 
-//new path search() feb 3. 11:09
-//External execution
-
+//              new path search() feb 3. 11:09
+//                  External execution
+//------------------------------------------------------------
 char * pathSearch(tokenlist * tokens){
 //----------------ECHO-----------------------------
     int commandPos = -1;
@@ -310,7 +310,6 @@ char * pathSearch(tokenlist * tokens){
     
     char * colon = strtok(copyPath, ":");
     
-    char * bufHit;
     while(colon != NULL)
     {
         
@@ -346,8 +345,6 @@ char * pathSearch(tokenlist * tokens){
             {
                 printf("that isn't executable\n");
             }
-            //bufHit = malloc(strlen(buffer) + 1);
-            //strcpy(bufHit, buffer);
         }
         else
         {
@@ -360,7 +357,6 @@ char * pathSearch(tokenlist * tokens){
         
     }//end while loop
     
-    //temp
     return 1;
 }
 
@@ -368,7 +364,7 @@ char * pathSearch(tokenlist * tokens){
 void pipeHandler(tokenlist * tokens)
 {
     printf("\nWE ARE IN THE PIPE FUNCTION!!\n");
-    //parse commands into separate tokens then get buffer with path
+    //parse commands into separate tokens then get path with pathSearch
     char * argv1[tokens->size];
     int index = 0;
     for(int i = 0; i < tokens->size; i++)
@@ -388,7 +384,6 @@ void pipeHandler(tokenlist * tokens)
         printf(argv1[i]);
     }
     
-    tokenlist * cmd1Tokens = get_tokens(argv1);
 
     char * argv2[tokens->size];
     index++;
@@ -452,7 +447,7 @@ void pipeHandler(tokenlist * tokens)
 }
 
 //background processing, this function might have to be connected to another one...
-void background_processing(tokenlist * tokens){
+/*void background_processing(tokenlist * tokens){
     
     //background processes are called with a '&' behind the command.
     for(int i = 0; i < tokens->size; i++){
@@ -481,7 +476,7 @@ void background_processing(tokenlist * tokens){
         printf("process is finished");
     }
     
-}
+}*/
 
 //__________________________________________________________________________________
 //                                      I/O REDIRECTION
@@ -577,19 +572,17 @@ int cd2(tokenlist * tokens){
 //send to background,
     //when execution starts: print [Job number] [the command's PID]
     //when execution ends: print [Job number] [the command's command line]
-
-    
+void background_processing(tokenlist *tokens)
+{
     //getting all the commands we want to run in the background into the list 'cmdList'
     int cmdCounter = 1;
-    char * cmdList[3];
-    cmdList[0] = "";
-    cmdList[1] = "";
-    cmdList[2] = "";
-    
-    for(int i = 0; i < tokens->size; i++){
+    char *cmdList[3];
+    for(int i = 0; i < tokens->size; i++)
+    {
         if(strcmp(tokens->items[i], "&") == 0){ //means we have to make whole line background processes
             
             cmdList[0] = tokens->items[i - 1];  //if there is 1 cmd
+            //strcpy(cmdList[0], tokens->items[i-1]);
             
             if(cmdCounter == 1){
                 cmdList[0] = tokens->items[i -1];
@@ -629,7 +622,7 @@ int cd2(tokenlist * tokens){
     for(int u = 0; u < 3; u++){
         printf("List of background commands: %d, %s\n", u, cmdList[u]);
     }
-
+}
 //need to do waitpid/execute all the things inside of cmdList[]
 
 //___________________________background processing text parsing___________________________________
