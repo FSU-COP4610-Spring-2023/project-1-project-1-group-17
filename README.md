@@ -48,8 +48,11 @@ First Bug:
 Second Bug: 
     - For part 7: I/O redirection, Emma had a seg fault during runtime. The bug started at 5:00 pm on 2/2/23. The issue was with the strchr. This library function searches for the first occurence of a character. It was looking for the  characters for input and output in the string entered by the user for tokens -> items[i]. This library function did not work and caused a seg fault until it was changed to strcmp. The compares 2 strings character by character. If the strings turn out to be equal, then the function will return 0. To fix this issue, the new if statement inside the for loop that stores the filename entered by the user, uses strcmp. This will check if the input and output characters occur in th string entered. 
 Third Bug: 
-    - 
-
+    - For part 7: I/O redirection, I had a memory problem storing the string input the user typed to the screen. I was storing this string as a char buffer[200]. The string has a maximum length of 200. The buffer was not storing the string the user entered in the terminal and was instead storing random characters. To fix this, I had to create another int called bufferSize and Thomas helped me make sure the buffer only stores input from cmd until it sees a ">" character. In the buffer section, it checks if the combined length of buffer and the new token is >= to size of buffer, then the loop breaks. Otherwise I copied the contents from tokens->items[j] into buffer uses memcpy (copies block of memory fom one location to another). After doing this, I was able to print the contents of the buffer (the correct input the user typed) to the file.  
+Fourth Bug: 
+   
+    
+    
 ## Current finished portions of the project: 
 - Parsing 
 - Environmental Variables 
@@ -60,7 +63,8 @@ Third Bug:
 
 
 ## Unfinished portions 
-- 
+- Input and Output Redirection:
+    - This function is able to create a file, write to a file, overwrite a file if the file already exists and store the new input in it. But, we were not able to get it to print the contents of the file to the screen (output terminal). 
 
 
 ## Extra Credit completed: 
