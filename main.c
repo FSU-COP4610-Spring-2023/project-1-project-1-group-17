@@ -29,7 +29,7 @@ void EnvironmentVars();
 void prompt();
 void InputOutputRedirection(tokenlist * tokens);
 void Exit(tokenlist * tokens);
-void cd_command (int argc, char * argv[], tokenlist * tokens);
+void cd_command (tokenlist * tokens);
 void pipeHandler(tokenlist *tokens);
 char * pathSearch(tokenlist *tokens);
 
@@ -218,7 +218,7 @@ int main()
                 pipeHandler(tokens);
             }
         }
-
+        //cd_command(tokens);
         pathSearch(tokens);
 
 
@@ -703,7 +703,7 @@ void Exit(tokenlist * tokens){
 }
 
 
-void cd_command (int argc, char * argv[], tokenlist * tokens)
+void cd_command (tokenlist * tokens)
 {
     char * targetDirectory;
     char * path = getenv("HOME"); //path is home by default
@@ -763,7 +763,7 @@ void cd_command (int argc, char * argv[], tokenlist * tokens)
     
     
     
-    // Signals an error if more than one argument is present
+    /*// Signals an error if more than one argument is present
     if (argc > 2) {
         printf(stderr, "Error: More than one argument is present.\n");
         return;
@@ -775,7 +775,7 @@ void cd_command (int argc, char * argv[], tokenlist * tokens)
     }
     else {
         path = argv[1];
-    }
+    }*/
 
    
 
