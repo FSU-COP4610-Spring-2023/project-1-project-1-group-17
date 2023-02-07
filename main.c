@@ -413,7 +413,7 @@ void pipeHandler(tokenlist * tokens)
     int index = 0;
     for(int i = 0; i < tokens->size; i++)
     {
-        if (tokens->items[i] == "|")
+        if (strcmp(tokens->items[i], "|"))
         {
             //index = i;
             break;
@@ -485,8 +485,7 @@ void pipeHandler(tokenlist * tokens)
         close(pfds[1]);
 
         //waiting for child process to execute
-        waitpid(pfds[0], pfds, pid0);
-        waitpid(pfds[1], pfds, pid1);
+        waitpid(pid0, NULL, 0);
     }
 }
 
