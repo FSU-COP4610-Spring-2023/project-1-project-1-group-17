@@ -198,7 +198,6 @@ int main()
          */
 
         char *input = get_input();
-        printf("whole input: %s\n", input);
 
         tokenlist *tokens = get_tokens(input);
 
@@ -368,16 +367,12 @@ char * pathSearch(tokenlist * tokens){
         //do access check
         if (access(buffer, F_OK) == 0)
         {
-            printf("\nBUFFER: %s\n", buffer);
             if(access(buffer, X_OK) == 0)
             {
-                printf("IT IS GOOD TO EXECUTE\n\n");
                 int pid = fork();
                 if (pid == 0)
                 {
-                    printf("We got to execv\n");
                     execv(buffer, argv);
-                    printf("we got after exec\n");
                 }
                 else
                 {
@@ -402,7 +397,6 @@ char * pathSearch(tokenlist * tokens){
 //PIPING
 void pipeHandler(tokenlist * tokens)
 {
-    printf("\nWE ARE IN THE PIPE FUNCTION!!\n");
     //parse commands into separate tokens then get path with pathSearch
     char * argv1[tokens->size];
     int index = 0;
@@ -417,7 +411,6 @@ void pipeHandler(tokenlist * tokens)
         index++;
     }
     argv1[index + 1] = NULL;
-    printf("\nPRINTING ARGV1\n");
     for(int i = 0; i < index; i++)
     {
         printf(argv1[i]);
