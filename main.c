@@ -54,9 +54,17 @@ void add_job(pid_t pid, char* cmd) {
     strcpy(activeJobs[job_num].cmd, cmd);
 }
 
+
 void remove_job(int id){
     
-   // activeJobs[id]. NULL;
+    for(int i = 0; i < job_num -1; i++)
+    {
+        activeJobs[i].status = activeJobs[i + 1].status;
+        activeJobs[i].pid = activeJobs[i + 1].pid;
+        activeJobs[i].id = activeJobs[i + 1].id;
+        strcpy(activeJobs[i].cmd, activeJobs[i + 1].cmd);
+    }
+    job_num--;
 }
 
 //__________________________________________________________
@@ -629,7 +637,7 @@ void background_processing(tokenlist *tokens)
             printf("%d  %d  %s",activeJobs[j].id, activeJobs[j].pid, activeJobs[j].cmd);
             
             if(activeJobs[j].status != 0){ //that process is finished
-                remove_Job(activeJobs[j].id);
+                remove_job(activeJobs[j].id);
             }
         }
         
