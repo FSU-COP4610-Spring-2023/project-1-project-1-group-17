@@ -29,6 +29,33 @@ void prompt();
 void pipeHandler(tokenlist *tokens);
 char * pathSearch(tokenlist *tokens);
 
+
+#define MAX_JOBS 100
+int job_num = 0;
+
+struct job {
+    int id;
+    pid_t pid;
+    char cmd[1000];
+    pid_t status;
+};
+void add_job(pid_t pid, char* cmd);
+void remove_job(int id);
+
+struct job activeJobs[MAX_JOBS]; //array of type job to store the active background processes
+
+void add_job(pid_t pid, char* cmd) {
+    activeJobs[job_num].id = ++job_num;
+    activeJobs[job_num].pid = pid;
+    activeJobs[job_num].status = waitpid(pid, NULL, WNOHANG);
+    strcpy(activeJobs[job_num].cmd, cmd);
+}
+
+void remove_job(int id){
+    
+   // activeJobs[id]. NULL;
+}
+
 //__________________________________________________________
 
 
@@ -572,8 +599,10 @@ int cd2(tokenlist * tokens){
 //send to background,
     //when execution starts: print [Job number] [the command's PID]
     //when execution ends: print [Job number] [the command's command line]
+
 void background_processing(tokenlist *tokens)
 {
+    
     //getting all the commands we want to run in the background into the list 'cmdList'
     int cmdCounter = 1;
     char *cmdList[3];
@@ -615,17 +644,47 @@ void background_processing(tokenlist *tokens)
             
         }
         
-        
-        
-    }
+    }//end for loop
 
+
+    pid_t pids[3];
+    int status;
     for(int u = 0; u < 3; u++){
-        printf("List of background commands: %d, %s\n", u, cmdList[u]);
+        if(cmdList[u] != NULL){
+            pids[u] = fork();
+            if(pids[u] == 0){
+                //child process
+                
+            }
+            else{
+                //parent process
+                waitpid(pids[u], &status, 0);//make it run in the background
+                add_job(pids[u], cmdList[u]); //add it to list of processes running
+            }
+        
+        }
+    }//end for loop
+    
+    
+    
+    //jobs built-in stuff....
+    
+    for(int j = 0; j< tokens->size; j++){
+        
+        if(strcmp(tokens->items[j], "jobs") == 0){
+            printf("%d  %d  %s",activeJobs[j].id, activeJobs[j].pid, activeJobs[j].cmd);
+            
+            if(activeJobs[j].status != 0){ //that process is finished
+                remove_Job(activeJobs[j].id);
+            }
+        }
+        
     }
+    
+    
+    
 }
-//need to do waitpid/execute all the things inside of cmdList[]
 
-//___________________________background processing text parsing___________________________________
 
 
 
