@@ -489,37 +489,6 @@ void pipeHandler(tokenlist * tokens)
     }
 }
 
-//background processing, this function might have to be connected to another one...
-/*void background_processing(tokenlist * tokens){
-    
-    //background processes are called with a '&' behind the command.
-    for(int i = 0; i < tokens->size; i++){
-
-        char * amper;
-        char * back_cmd;
-        if(strcmp(tokens->items[i], "&") == 0){
-            amper = tokens->items[i]; //store the amper
-            
-            back_cmd = tokens->items[i -1]; //store the background command
-        }
-    }
-    
-    // *** back_cmd is storing the command that we wish to run in the background ***
-    
-    
-    
-    pid_t waitpid(pid_t pid, int *stat_loc, int options);
-    
-    //WNOHANG - waitpid returns immediately with finish status
-    
-    pid_t pid; //temp
-    pid_t status = waitpid(pid, NULL, WNOHANG);
-    
-    if(status != 0){ //process is finished
-        printf("process is finished");
-    }
-    
-}*/
 
 
 
