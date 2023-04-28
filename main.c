@@ -46,27 +46,43 @@ struct job {
 };
 void add_job(pid_t pid, char* cmd);
 void remove_job(int id);
+void jobs();
 
 struct job activeJobs[MAX_JOBS]; //array of type job to store the active background processes
 
 void add_job(pid_t pid, char* cmd) {
     activeJobs[job_num].id = ++job_num;
     activeJobs[job_num].pid = pid;
-    activeJobs[job_num].status = waitpid(pid, NULL, WNOHANG);
+    activeJobs[job_num].status = 0; // waitpid(pid, NULL, WNOHANG);
     strcpy(activeJobs[job_num].cmd, cmd);
 }
 
 
 void remove_job(int id){
     
-    for(int i = 0; i < job_num -1; i++)
-    {
-        activeJobs[i].status = activeJobs[i + 1].status;
-        activeJobs[i].pid = activeJobs[i + 1].pid;
-        activeJobs[i].id = activeJobs[i + 1].id;
-        strcpy(activeJobs[i].cmd, activeJobs[i + 1].cmd);
+    for(int i = 0; i < job_num; i++) {
+        if (activeJobs[i].id == id) {
+            for (int j = 1; j < job_num - 1; j++) {
+                activeJobs[j] = activeJobs[j + 1];
+            }
+            job_num--;
+            break;
+        }
     }
-    job_num--;
+}
+
+void jobs(){
+    int i = 0;
+    while (i < job_num){
+        int status = waitpid(activeJobs[i].pid, &(activeJobs[i].status), WNOHANG | WUNTRACED);
+        if(status == -1 || WIFEXITED(activeJobs[i].status) || WIFSIGNALED(activeJobs[i].status)) {
+            remove_job(activeJobs[i].id);
+        } else {
+            printf("[%d] %d %s\n", activeJobs[i].id, activeJobs[i].pid, activeJobs[i].cmd);
+            i++;
+        }
+    }
+    }
 }
 
 //__________________________________________________________
@@ -156,6 +172,8 @@ This function takes in the tokenlist and checks if a tilde is present.
 Then it finds the specific token where the tilde is located and replaces it
 with $HOME and concatenates the rest of the directory on to $HOME
 */
+
+//CORRECTION: handles tilde '~' alone 
 void tildeExpansion(tokenlist *tokens)
 {
     for(int i = 0; i < tokens->size; i++)
@@ -165,14 +183,20 @@ void tildeExpansion(tokenlist *tokens)
             char * copy = strchr(tokens->items[i], '/');
             char copyTwo[strlen(copy)];
             strcpy(copyTwo, copy);
-            
-            //printf(copyTwo);
 
             unsigned int length = strlen(copy) + strlen(getenv("HOME"));
 
             tokens->items[i] = (char*) realloc(tokens->items[i], length * sizeof(char));
-            strcpy(tokens->items[i], getenv("HOME"));
-            strcat(tokens->items[i], copyTwo);
+            
+            //checking if second char of token is null, this indicates standalone tilde 
+            if (tokens->items[i][1] == '\0') { //handles standalone tilde 
+                strcpy(tokens->items[i], getenv("HOME")); 
+            }
+            else {
+                strcpy(tokens->items[i], getenv("HOME"));
+                strcat(tokens->items[i], copyTwo);
+                
+            }
         }
     }
 }
@@ -229,6 +253,12 @@ int main()
             if (tokens->size > 0 && strcmp(tokens->items[i], "exit") == 0) {
                 Exit(tokens);
             }
+
+            //JOBS: added correction
+            if (strcmp(tokens->items[i], "jobs") == 0){
+                jobs();
+                continue;
+            }
         }
         
         
@@ -255,6 +285,8 @@ return 0;
 /* This function replaces every token that starts with a dollar sign
  * character and replaces it with its corresponding value
  */
+
+//CORRECTION: prints only one value for each env var, instead of three 
 void EnvironmentVars(tokenlist *tokens){
 
     for (int i = 0; i < tokens->size; i++){
@@ -264,10 +296,16 @@ void EnvironmentVars(tokenlist *tokens){
         if(dollar == '$'){
 
             char * doCommand = getenv(tokens->items[i] + 1);
-            printf("%s", doCommand, "\n");
-            printf("\n");
+            if (doCommand != NULL){
+                printf("%s\n", doCommand);
+            }
+            else {
+                printf("%s ", tokens->items[i]); 
+
+            }
         }
     }
+    printf("\n"); 
 
 }
 
@@ -345,7 +383,9 @@ char * pathSearch(tokenlist * tokens){
         argv[i] = tokens->items[i];
     }
     
-    argv[tokens->size + 1] = NULL;
+    //argv[tokens->size + 1] = NULL; //CHANGED
+    //should fix issue on single commands w/ no arguments and satisfy point deduction
+    argv[tokens->size] = NULL;
     
  
     char * temp_Path= getenv("PATH");
@@ -648,8 +688,10 @@ void InputOutputRedirection(tokenlist * tokens) {
 
 
 //must wait for all background processes
+//CORRECTED 
 void Exit(tokenlist * tokens){
 
+/*
     int valid_cmd_count = 0;
     char * argv1[tokens->size];
     char * valid_commands[3];
@@ -690,13 +732,38 @@ void Exit(tokenlist * tokens){
         printf("No valid commands were executed in this shell \n");
         printf("\n");
     }
+*/ 
 
+    //wait for background process to finish
+    waitpid(-1, NULL, 0);
+
+    int valid_cmd_count = 0;
+    char *valid_commands[3];
+
+    // Store valid commands in array
+    for (int i = 0; i < tokens->size; i++) {
+        int valid = system(tokens->items[i]);
+        if (valid == 0) {//if command is valid, store it in our little array of valid_commands[]
+            valid_commands[valid_cmd_count % 3] = tokens->items[i];
+            valid_cmd_count++;
+        }
+    }
+
+    if (valid_cmd_count > 0) {
+        printf("The last valid command(s) executed were:\n");
+        for (int i = 0; i < valid_cmd_count; i++) {
+            printf("%d. %s\n", i+1, valid_commands[i]);
+        }
+    } else {
+        printf("No valid commands were executed in this shell\n");
+    }
 }
 
 
 
 void cd_command (tokenlist * tokens)
 {
+    /*
     char * targetDirectory;
     char * path = getenv("HOME"); //path is home by default
     char *home = getenv("HOME");
@@ -723,92 +790,38 @@ void cd_command (tokenlist * tokens)
             }
         }//end cd check
     }//end for loop
-    
-    /*
-    //try to go to the directory the user specified
-    if (!opendir(targetDirectory)) {
-        fprintf(stderr, "Error: Target is not a directory.\n");
+    */
+   // check number of arguments
+
+    char * targetDirectory;
+    char * path = getenv("HOME"); //path is home by default
+    char *home = getenv("HOME");
+
+    if (tokens->size > 2) {
+        printf("Error: too many arguments\n");
         return;
     }
-    if (chdir(targetDirectory) == -1) {
-        fprintf(stderr, "Error: Target does not exist.\n");
+
+    if (tokens->size == 2) {
+        targetDirectory = tokens->items[1];
+    } else {
+        targetDirectory = home;
+    }
+
+    if (chdir(targetDirectory) != 0) {
+        printf("Error: could not change directory to '%s'\n", targetDirectory);
         return;
     }
-     */
+
+    setenv("PWD", targetDirectory, 1); // set PWD variable
+    char *cwd = getcwd(NULL, 0); // get current working directory
+    setenv("OLDPWD", cwd, 1); // set OLDPWD variable
+    free(cwd);
+
+    // update prompt
+    char *username = getenv("USER");
+    printf("%s:%s$ ", username, targetDirectory);
+    fflush(stdout);
+
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
