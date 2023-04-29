@@ -82,8 +82,8 @@ void jobs(){
             i++;
         }
     }
-    }
 }
+
 
 //__________________________________________________________
 
@@ -243,7 +243,7 @@ int main()
             }
         }
 
-        //background_processing(tokens);
+        background_processing(tokens);
         cd_command(tokens);
         pathSearch(tokens);
 
@@ -263,7 +263,7 @@ int main()
         
         
         EnvironmentVars(tokens);
-        //InputOutputRedirection(tokens);
+        InputOutputRedirection(tokens);
         
         free(input);
         free_tokens(tokens);
@@ -683,6 +683,7 @@ void InputOutputRedirection(tokenlist * tokens) {
         close(fd);
         waitpid(pid, status, 0); //waiting for parent process
     }
+    
 
 }
 
@@ -763,7 +764,7 @@ void Exit(tokenlist * tokens){
 
 void cd_command (tokenlist * tokens)
 {
-    /*
+    
     char * targetDirectory;
     char * path = getenv("HOME"); //path is home by default
     char *home = getenv("HOME");
@@ -790,38 +791,7 @@ void cd_command (tokenlist * tokens)
             }
         }//end cd check
     }//end for loop
-    */
-   // check number of arguments
-
-    char * targetDirectory;
-    char * path = getenv("HOME"); //path is home by default
-    char *home = getenv("HOME");
-
-    if (tokens->size > 2) {
-        printf("Error: too many arguments\n");
-        return;
-    }
-
-    if (tokens->size == 2) {
-        targetDirectory = tokens->items[1];
-    } else {
-        targetDirectory = home;
-    }
-
-    if (chdir(targetDirectory) != 0) {
-        printf("Error: could not change directory to '%s'\n", targetDirectory);
-        return;
-    }
-
-    setenv("PWD", targetDirectory, 1); // set PWD variable
-    char *cwd = getcwd(NULL, 0); // get current working directory
-    setenv("OLDPWD", cwd, 1); // set OLDPWD variable
-    free(cwd);
-
-    // update prompt
-    char *username = getenv("USER");
-    printf("%s:%s$ ", username, targetDirectory);
-    fflush(stdout);
+    
 
 
 }
